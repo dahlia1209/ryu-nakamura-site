@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 背景円 -->
+  <circle cx="16" cy="16" r="16" fill="#2D3E50"/>
+  
+  <!-- 技術/繋がりを表す図形 -->
+  <path d="M8 16 L14 10 L18 14 L24 8" stroke="#3498DB" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- 人/サービスを表す要素 -->
+  <circle cx="24" cy="8" r="2.5" fill="#E74C3C"/>
+  <circle cx="14" cy="10" r="2" fill="#2ECC71"/>
+  <circle cx="18" cy="14" r="2" fill="#F1C40F"/>
+  <circle cx="8" cy="16" r="2.5" fill="#1ABC9C"/>
+</svg>

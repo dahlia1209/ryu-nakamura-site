@@ -1,27 +1,61 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
-</script>
+import HeaderItem from './components/HeaderItem.vue'
 
+</script>
+  
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
+    <HeaderItem />
   </header>
-
-  <RouterView />
+  <main>
+    <RouterView />
+  </main>
 </template>
 
 <style scoped>
-header {
+
+main,header{
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  width: 100%;
+}
+
+main{
+  background-color: white;
+  padding-top: 70px;
+}
+
+header{
+  height: 70px;
+  position: fixed;
+  top: 0;
+  width: 100%; 
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.9); 
+}
+
+header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0; 
+  height: 8px; 
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.15) inset;
+  pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  main,header {
+    background-color: #000;
+  }
+}
+/* header {
   line-height: 1.5;
   max-height: 100vh;
 }
@@ -81,5 +115,5 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
-}
+} */
 </style>

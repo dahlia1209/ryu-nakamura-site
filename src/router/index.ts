@@ -20,7 +20,17 @@ const router = createRouter({
     {
       path: '/service',
       name: 'service',
-      component: () => import('../views/ServiceViews.vue'),
+      component: () => import('../views/ServiceView.vue'),
+    },
+    {
+      path: '/works',
+      name: 'works',
+      component: () => import('../views/WorksView.vue'),
+    },
+    {
+      path: '/column',
+      name: 'column',
+      component: () => import('../views/ColumnView.vue'),
     },
   ],
 })

@@ -42,24 +42,10 @@ const utility=(()=>{
     <HomeHeadline :headline="new Headline('purpose','本サイトの目的')" @input-by="utility.pushHeadline" />
     <div class="description">
       ご一緒にお仕事させていただける方を探しています。<br>
-      {{ new Date().getFullYear() }}年{{ (new Date().getMonth()) + 1 }}月現在、ご提供可能なサービスはシステムエンジニアリングサービス(SES)になります。<br>
-      サービス内容は<a href="#service">こちら</a>をご確認ください。<br>
-    </div>
-    <HomeHeadline :headline="new Headline('service','提供サービス一覧')" @input-by="utility.pushHeadline" />
-    <div class="description">
-      <ul>
-        <li>システムエンジニアリングサービス(SES)</li>
-        お客様の要望にあわせて技術提供をいたします。
-      </ul>
-    </div>
-    <HomeHeadline :headline="new Headline('owner','事業者情報')" @input-by="utility.pushHeadline" />
-    <div class="description">
-      <HomeTable />
-    </div>
-    <HomeHeadline :headline="new Headline('contact','お問い合わせ')" @input-by="utility.pushHeadline" />
-    <div class="description">
-      下記メールアドレス宛へご連絡ください<br>
-      <a href="mailto:example@email.com">dahlia1209@gmail.com</a><br>
+      {{ new Date().getFullYear() }}年{{ (new Date().getMonth()) + 1 }}月現在、
+      ご提供可能なサービスは検討中ですが、ご相談事項がありましたら
+      <a href="mailto:dahlia1209@gmail.com">dahlia1209@gmail.com</a>宛にご連絡ください。<br>
+      スポット(週最大20時間程度)での対応であればご検討可能です。<br>
     </div>
     <HomeHeadline :headline="new Headline('works','活動内容')" @input-by="utility.pushHeadline" />
     <div class="description">
@@ -72,6 +58,15 @@ const utility=(()=>{
       下記リンクのgithubでソースコードを公開しています。<br>
       <a href="https://github.com/dahlia1209" target="_blank"
         rel="noopener noreferrer">https://github.com/dahlia1209</a>
+    </div>
+    <HomeHeadline :headline="new Headline('contact','お問い合わせ')" @input-by="utility.pushHeadline" />
+    <div class="description">
+      下記メールアドレス宛へご連絡ください<br>
+      <a href="mailto:dahlia1209@gmail.com">dahlia1209@gmail.com</a><br>
+    </div>
+    <HomeHeadline :headline="new Headline('owner','事業者情報')" @input-by="utility.pushHeadline" />
+    <div class="description">
+      <HomeTable />
     </div>
     <HomeHeadline :headline="new Headline('profile','自己紹介')" @input-by="utility.pushHeadline" />
     <div class="description">

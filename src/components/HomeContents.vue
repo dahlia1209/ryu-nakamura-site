@@ -6,20 +6,6 @@ const props = defineProps<{
   contents: Headline[],
 }>()
 
-onMounted(()=>{
-  console.log('contents',props.contents)
-})
-
-// onMounted(()=>{
-//     //サブ関数
-//     const _validateProps=()=>{
-//         if (props.links.length!=props.displays.length) throw new Error(`引数が正しくありません。要素数が一致しません。links:${props.links.length},text:${props.displays.length}`)
-//     }
-
-//     //メイン処理
-//     _validateProps()
-// })
-
 </script>
 
 <template>

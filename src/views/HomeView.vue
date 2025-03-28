@@ -44,8 +44,7 @@ const utility=(()=>{
       ご一緒にお仕事させていただける方を探しています。<br>
       {{ new Date().getFullYear() }}年{{ (new Date().getMonth()) + 1 }}月現在、
       ご提供可能なサービスは検討中ですが、ご相談事項がありましたら
-      <a href="mailto:dahlia1209@gmail.com">dahlia1209@gmail.com</a>宛にご連絡ください。<br>
-      スポット(週最大20時間程度)での対応であればご検討可能です。<br>
+      <a href="/contact">お問い合わせフォーム</a>よりご連絡ください。<br>
     </div>
     <HomeHeadline :headline="new Headline('works','活動内容')" @input-by="utility.pushHeadline" />
     <div class="description">

@@ -4,8 +4,6 @@ import { RouterLink, RouterView } from 'vue-router'
 import { useSiteStore } from '@/stores/site'
 import HelloWorld from './components/HelloWorld.vue'
 import HeaderItem from './components/HeaderItem.vue'
-import MobileHeaderItem from './components/HeaderItemMobile.vue'
-
 
 const siteStore = useSiteStore()
 

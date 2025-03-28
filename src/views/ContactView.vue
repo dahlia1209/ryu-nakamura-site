@@ -37,7 +37,6 @@ const submitForm = async () => {
     } as EmailMessage
     const response= await serviceStore.contact.sendmail(emailMessagge)
     const result = await response.json();
-    console.log('Email sent successfully:', result);
     submitted.value=true
   } catch (error) {
     console.error('メール送信中にエラーが発生しました。',error)
@@ -59,8 +58,7 @@ const getSubmitLabel=computed(()=>{
     <HomeHeadline :headline="new Headline('contact-page', 'お問い合わせ')" />
     
     <div class="contact-info">
-      <p>ご質問、ご相談、お見積もりのご依頼など、お気軽にお問い合わせください。</p>
-      <p>メールでの直接のお問い合わせ: <a href="mailto:dahlia1209@gmail.com">dahlia1209@gmail.com</a></p>
+      <p>ご質問、ご相談、ご依頼等がございましたら下記フォームよりお問い合わせください。</p>
     </div>
     
     <div class="contact-form-container">

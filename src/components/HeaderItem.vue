@@ -34,6 +34,7 @@ const closeMenu = () => {
                 new Headline('service','作品','/works'),
                 new Headline('service','サービス','/service'),
                 new Headline('column','コラム','/column'),
+                new Headline('contact','お問い合わせ','/contact'),
             ]" />
     </div>
 </template>

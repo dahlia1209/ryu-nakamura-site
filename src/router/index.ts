@@ -23,6 +23,11 @@ const router = createRouter({
       component: () => import('../views/ServiceView.vue'),
     },
     {
+      path: '/service/:id',
+      name: 'service-detail',
+      component: () => import('../components/ServiceDetailView.vue'),
+    },
+    {
       path: '/works',
       name: 'works',
       component: () => import('../views/WorksView.vue'),
@@ -31,6 +36,11 @@ const router = createRouter({
       path: '/column',
       name: 'column',
       component: () => import('../views/ColumnView.vue'),
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: () => import('../views/ContactView.vue'),
     },
   ],
 })

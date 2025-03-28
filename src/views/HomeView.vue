@@ -61,8 +61,8 @@ const utility=(()=>{
     </div>
     <HomeHeadline :headline="new Headline('contact','お問い合わせ')" @input-by="utility.pushHeadline" />
     <div class="description">
-      下記メールアドレス宛へご連絡ください<br>
-      <a href="mailto:dahlia1209@gmail.com">dahlia1209@gmail.com</a><br>
+      <a href="/contact">お問い合わせフォーム</a>または<a href="mailto:dahlia1209@gmail.com">dahlia1209@gmail.com</a>宛へご連絡ください
+      
     </div>
     <HomeHeadline :headline="new Headline('owner','事業者情報')" @input-by="utility.pushHeadline" />
     <div class="description">

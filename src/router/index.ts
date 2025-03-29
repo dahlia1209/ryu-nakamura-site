@@ -3,6 +3,9 @@ import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    return { top: 0 }// ページ遷移時に常に画面上部にスクロール
+  },
   routes: [
     {
       path: '/',
@@ -23,14 +26,14 @@ const router = createRouter({
       component: () => import('../views/ServiceView.vue'),
     },
     {
-      path: '/works',
-      name: 'works',
-      component: () => import('../views/WorksView.vue'),
+      path: '/contents',
+      name: 'contents',
+      component: () => import('../views/ContentsView.vue'),
     },
     {
-      path: '/column',
-      name: 'column',
-      component: () => import('../views/ColumnView.vue'),
+      path: '/contents/:id',
+      name: 'content-detail',
+      component: () => import('../views/ContentDetailView.vue'),
     },
     {
       path: '/contact',
@@ -43,11 +46,6 @@ const router = createRouter({
       component: () => import('../views/PrivacyPolicyView.vue'),
     },
     {
-      path: '/column/:id',
-      name: 'content-detail',
-      component: () => import('../views/ContentDetailView.vue'),
-    },
-    {
       path: '/checkout/success',
       name: 'checkout-success',
       component: () => import('../views/CheckoutSuccessView.vue'),
@@ -58,6 +56,7 @@ const router = createRouter({
       component: () => import('../views/ContactView.vue'),
     },
   ],
+
 })
 
 export default router

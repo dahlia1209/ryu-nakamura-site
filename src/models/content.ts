@@ -40,3 +40,15 @@ export class CheckoutSessionStatus {
     public amount_total: number,
   ) {}
 }
+
+export class WorkItem {
+  constructor(
+      public id: number,
+      public title: string,
+      public description: string,
+      public imageUrl: string,
+      public techStack: string[],
+      public projectUrl?: string,
+      public githubUrl?: string,
+  ){}
+}

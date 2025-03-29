@@ -46,7 +46,7 @@ const formattedDate = computed(() => {
 // Redirect if content not found
 onMounted(() => {
   if (!content.value) {
-    router.push('/column');
+    router.push('/contents');
   }
   
   // Check if there was a cancelled checkout
@@ -73,11 +73,12 @@ async function handleCheckout() {
     // Build success and cancel URLs (use absolute URLs with origin)
     const origin = window.location.origin;
     const successUrl = `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${origin}/column/${content.value.id}?checkout_cancelled=true`;
+    const cancelUrl = `${origin}/contents/${content.value.id}?checkout_cancelled=true`;
     
     // Call content store to create checkout session
-    const result = await contentStore.purchaseContent(
-      content.value.id,
+    const contentItem = contentStore.getContentById(content.value.id)
+    const result = await contentStore.service.createContentCheckout(
+      contentItem!,
       email.value,
       successUrl,
       cancelUrl
@@ -102,10 +103,20 @@ async function handleCheckout() {
 <template>
   <div v-if="content" class="content-detail">
     <div class="back-link">
-      <RouterLink to="/column">&larr; コラム一覧に戻る</RouterLink>
+      <RouterLink to="/contents">&larr; コラム一覧に戻る</RouterLink>
       
       <div v-if="route.query.checkout_cancelled" class="checkout-cancelled">
         お支払いがキャンセルされました。再度お試しください。
+      </div>
+    </div>
+    
+    <!-- 注意喚起メッセージ -->
+    <div class="test-environment-warning">
+      <div class="warning-icon">⚠️</div>
+      <div class="warning-content">
+        <h3>テスト環境のお知らせ - 購入しないでください</h3>
+        <p>これはテスト環境です。このコンテンツは実際には存在せず、<strong>購入しても実際のコンテンツは提供されません</strong>。</p>
+        <p>決済機能はテスト用に設定されていますが、<strong>実際の決済が行われる可能性があります</strong>ので購入操作は行わないでください。</p>
       </div>
     </div>
     
@@ -145,6 +156,7 @@ async function handleCheckout() {
       
       <section class="purchase-section">
         <div class="price-card">
+          <div class="test-badge">テスト環境</div>
           <h2>コンテンツを購入する</h2>
           <div class="price">{{ formattedPrice }}</div>
           <p class="price-description">お支払いは一回のみです。購入後、コンテンツに無期限でアクセスできます。</p>
@@ -230,6 +242,41 @@ async function handleCheckout() {
   color: #721c24;
   border-radius: 4px;
   font-size: 0.9rem;
+}
+
+/* テスト環境の警告スタイル */
+.test-environment-warning {
+  display: flex;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-left: 5px solid #dc3545;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 25px;
+  align-items: flex-start;
+}
+
+.warning-icon {
+  font-size: 24px;
+  margin-right: 15px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.warning-content h3 {
+  margin: 0 0 10px 0;
+  color: #721c24;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.warning-content p {
+  margin: 5px 0;
+  color: #721c24;
+}
+
+.warning-content strong {
+  font-weight: 700;
 }
 
 .content-header {
@@ -358,6 +405,21 @@ p {
   padding: 25px;
   position: sticky;
   top: 20px;
+  position: relative;
+}
+
+/* テストバッジ */
+.test-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .price {

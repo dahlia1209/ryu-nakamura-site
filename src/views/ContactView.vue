@@ -2,10 +2,11 @@
 import { ref,computed } from 'vue';
 import HomeHeadline from '../components/HomeHeadline.vue';
 import { Headline } from '@/models/page';
-import { useServiceStore } from '@/stores/services'
+// import { useServiceStore } from '@/stores/services'
+import { useContactStore } from '@/stores/contact'
 import { type EmailMessage } from '@/models/contact';
 
-const serviceStore=useServiceStore()
+const contactStore=useContactStore()
 
 const name = ref('');
 const email = ref('');
@@ -35,7 +36,7 @@ const submitForm = async () => {
         },
         senderName:name.value
     } as EmailMessage
-    const response= await serviceStore.contact.sendmail(emailMessagge)
+    const response= await contactStore.service.sendmail(emailMessagge)
     const result = await response.json();
     submitted.value=true
   } catch (error) {

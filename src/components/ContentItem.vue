@@ -54,7 +54,7 @@ function formatPrice(price: number): string {
       </div>
       
       <div class="action-buttons">
-        <RouterLink :to="`/column/${content.id}`" class="details-button">
+        <RouterLink :to="`/contents/${content.id}`" class="details-button">
           詳細を見る
         </RouterLink>
       </div>

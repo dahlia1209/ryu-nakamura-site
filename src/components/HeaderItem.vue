@@ -31,9 +31,8 @@ const closeMenu = () => {
                 {'sp-headline':[siteStore.isMobile ,siteStore.isMenuOpen].every(x=>x===true)}
             ]" :contents="[
                 new Headline('home','ホーム','/'),
-                new Headline('service','作品','/works'),
+                new Headline('service','コンテンツ','/contents'),
                 new Headline('service','サービス','/service'),
-                new Headline('column','コラム','/column'),
                 new Headline('contact','お問い合わせ','/contact'),
             ]" />
     </div>

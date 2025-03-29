@@ -16,9 +16,6 @@ export function useContactService(apiBaseUrl: string = import.meta.env.VITE_API_
           }
           
           return response;
-        // const poller = await client.beginSend(emailMessage)
-        // const result = await poller.pollUntilDone()
-        // return result
     }
 
     return {

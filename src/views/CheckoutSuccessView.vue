@@ -24,7 +24,7 @@ onMounted(async () => {
   
   try {
     // Fetch session data from API
-    const data = await contentStore.getCheckoutStatus(sessionId);
+    const data = await contentStore.service.getSessionStatus(sessionId);
     sessionData.value = data;
     console.log("sessionData.value",sessionData.value)
     isLoading.value = false;
@@ -42,7 +42,7 @@ function goToHome() {
 
 // Handle view content
 function viewContentLibrary() {
-  router.push('/column');
+  router.push('/contents');
 }
 </script>
 

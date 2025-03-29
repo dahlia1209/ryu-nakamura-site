@@ -43,7 +43,6 @@ export function useCheckoutService(apiBaseUrl: string = import.meta.env.VITE_API
     };
 
     // Send request to backend
-    console.log("checkoutData",checkoutData)
     const response = await fetch(checkoutEndpoint, {
       method: 'POST',
       headers: {

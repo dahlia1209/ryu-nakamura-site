@@ -4,6 +4,7 @@ import { RouterLink, RouterView } from 'vue-router'
 import { useSiteStore } from '@/stores/site'
 import HelloWorld from './components/HelloWorld.vue'
 import HeaderItem from './components/HeaderItem.vue'
+import FooterItem from './components/FooterItem.vue'
 
 const siteStore = useSiteStore()
 
@@ -23,15 +24,23 @@ onUnmounted(()=>{
 </script>
   
 <template>
-  <header>
-    <HeaderItem />
-  </header>
-  <main :class="{'open':siteStore.isMenuOpen}">
-    <RouterView />
-  </main>
+  <div class="app-container">
+    <header>
+      <HeaderItem />
+    </header>
+    <main :class="{'open':siteStore.isMenuOpen}">
+      <RouterView />
+    </main>
+    <FooterItem />
+  </div>
 </template>
 
 <style scoped>
+.app-container {
+  display: flex;
+  flex-direction: column;
+}
+
 main,
 header {
   max-width: 1080px;

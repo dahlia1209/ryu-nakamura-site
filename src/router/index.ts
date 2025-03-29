@@ -23,11 +23,6 @@ const router = createRouter({
       component: () => import('../views/ServiceView.vue'),
     },
     {
-      path: '/service/:id',
-      name: 'service-detail',
-      component: () => import('../components/ServiceDetailView.vue'),
-    },
-    {
       path: '/works',
       name: 'works',
       component: () => import('../views/WorksView.vue'),
@@ -36,6 +31,26 @@ const router = createRouter({
       path: '/column',
       name: 'column',
       component: () => import('../views/ColumnView.vue'),
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: () => import('../views/ContactView.vue'),
+    },
+    {
+      path: '/privacy-policy',
+      name: 'privacy-policy',
+      component: () => import('../views/PrivacyPolicyView.vue'),
+    },
+    {
+      path: '/column/:id',
+      name: 'content-detail',
+      component: () => import('../views/ContentDetailView.vue'),
+    },
+    {
+      path: '/checkout/success',
+      name: 'checkout-success',
+      component: () => import('../views/CheckoutSuccessView.vue'),
     },
     {
       path: '/contact',

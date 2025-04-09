@@ -57,6 +57,9 @@ function formatPrice(price: number): string {
         <RouterLink :to="`/contents/${content.id}`" class="details-button">
           詳細を見る
         </RouterLink>
+        <a v-if="content.noteUrl" :href="content.noteUrl" target="_blank" class="note-link">
+          <img src="/logo/note_logo.svg" alt="note_logo" class="note-icon">
+        </a>
       </div>
     </div>
   </div>
@@ -177,10 +180,10 @@ h3 {
 .action-buttons {
   margin-top: 15px;
   display: flex;
-  justify-content: center;
+  gap: 10px;
 }
 
-.details-button {
+/* .details-button {
   background-color: #41b883;
   color: white;
   border: none;
@@ -192,9 +195,40 @@ h3 {
   text-align: center;
   transition: background-color 0.3s;
   width: 100%;
+} */
+
+/* .details-button:hover {
+  background-color: #389f70;
+} */
+
+.details-button, .note-link {
+  padding: 8px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.3s;
 }
 
-.details-button:hover {
-  background-color: #389f70;
+.note-link {
+  background-color: #f0f0f0; 
+  color: black;
 }
+
+.note-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 72px;
+}
+
+.details-button {
+  background-color: #41b883; 
+  color: white;
+}
+
+
+.note-link:hover,.details-button:hover {
+  opacity: 0.9;
+}
+
+
 </style>

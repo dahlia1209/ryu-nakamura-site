@@ -14,9 +14,9 @@ export function useCheckoutService(apiBaseUrl: string = import.meta.env.VITE_API
    */
   async function createContentCheckout(
     contentItem: ContentItem,
-    customerEmail: string,
     successUrl: string,
-    cancelUrl: string
+    cancelUrl: string,
+    customerEmail?: string,
   ) {
     // Create checkout items array with the content item
     const items: CheckoutItem[] = [
@@ -24,7 +24,7 @@ export function useCheckoutService(apiBaseUrl: string = import.meta.env.VITE_API
         name: contentItem.title,
         price: contentItem.price,
         quantity: 1,
-        description: contentItem.description,
+        description: contentItem.previewContent,
         images: contentItem.imageUrl  ? [`${apiBaseUrl}/${contentItem.imageUrl}`] : []
       }
     ];

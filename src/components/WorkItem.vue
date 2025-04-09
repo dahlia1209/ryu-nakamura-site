@@ -42,7 +42,7 @@ const props = defineProps<{
           サイトを見る
         </a>
         <a v-if="project.githubUrl" :href="project.githubUrl" target="_blank" class="github-link">
-          GitHub
+          <img src="/logo/GitHub_Logo.png" alt="GitHub_Logo" class="github-icon">
         </a>
       </div>
     </div>
@@ -120,10 +120,8 @@ h3 {
 }
 
 .project-link, .github-link {
-  padding: 8px 12px;
   border-radius: 4px;
   text-decoration: none;
-  font-weight: 500;
   transition: background-color 0.3s;
 }
 
@@ -133,13 +131,27 @@ h3 {
 }
 
 .github-link {
-  background-color: #24292e; /* GitHubカラー */
+  background-color: #f0f0f0; /* GitHubカラー */
   color: white;
 }
 
-.project-link:hover, .github-link:hover {
-  opacity: 0.9;
+.project-link:hover, .github-icon:hover {
+  opacity: 0.8;
 }
+
+.github-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 72px;
+}
+
+.github-text {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+
+
 
 /* @media (prefers-color-scheme: dark) {
   .work-card {

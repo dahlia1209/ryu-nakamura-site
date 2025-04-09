@@ -21,21 +21,26 @@ const closeMenu = () => {
         <a class="logo" href="/">
             Ryu Nakamura
         </a>
-
-        <button v-if="siteStore.isMobile" class="menu-button" @click="toggleMenu" aria-label="メニューを開く">
-            <span v-for="i in [1,2,3]" :key="i"  :class="['bar',{ 'open': siteStore.isMenuOpen }]"></span>
-        </button>
+        
 
         <HeaderHeadlineItem :class="[
                 {'hidden':[siteStore.isMobile ,!siteStore.isMenuOpen].every(x=>x===true)},
                 {'sp-headline':[siteStore.isMobile ,siteStore.isMenuOpen].every(x=>x===true)}
             ]" :contents="[
-                new Headline('home','ホーム','/'),
                 new Headline('service','コンテンツ','/contents'),
                 new Headline('service','サービス','/service'),
                 new Headline('contact','お問い合わせ','/contact'),
             ]" />
+        
     </div>
+    <div class="header-right">
+            <!-- ログインボタン追加 -->
+            <button class="login-button" >ログイン</button>
+            
+            <button v-if="siteStore.isMobile" class="menu-button" @click="toggleMenu" aria-label="メニューを開く">
+                <span v-for="i in [1,2,3]" :key="i"  :class="['bar',{ 'open': siteStore.isMenuOpen }]"></span>
+            </button>
+        </div>
 </template>
 
 <style scoped>
@@ -103,6 +108,29 @@ const closeMenu = () => {
   z-index: 5;
   padding: 20px 0;
   animation: slideDown 0.3s ease-in-out;
+}
+
+/* ヘッダー右側のコンテナ */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* ログインボタンのスタイル */
+.login-button {
+    background-color: #06C755;
+    color: white;
+    border-radius: 30px;
+    padding: 6px 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 0;
+    white-space: nowrap;
+}
+
+.login-button:hover {
+    opacity: 0.8;
 }
 
 /* header {

@@ -13,11 +13,11 @@ const contentStore = useContentStore();
 
 <template>
   <div class="works-container">
-    <HomeHeadline :headline="new Headline('my-works', '制作物一覧')" />
+    <HomeHeadline :headline="new Headline('my-works', '制作アプリ一覧')" />
     
     <div class="works-description">
-      これまでに個人で開発してきた作品を紹介します。
-      各プロジェクトの詳細については、リンク先をご確認ください。
+      これまでに個人で開発してきたアプリを紹介します。
+
     </div>
     
     <div class="works-grid">
@@ -27,19 +27,11 @@ const contentStore = useContentStore();
         :project="item"
       />
     </div>
-    <HomeHeadline :headline="new Headline('contents', '販売コンテンツ一覧')" />
-    <div class="alert-message">
-      <div class="alert-icon">⚠️</div>
-      <div class="alert-content">
-        <h3>テスト環境のお知らせ</h3>
-        <p>現在、コンテンツ販売はテスト段階であり、掲載されているコンテンツは実際には存在しません。</p>
-        <p>決済機能もテスト用に設定されていますので、<strong>誤って購入しないようご注意ください</strong>。</p>
-      </div>
-    </div>
+    <HomeHeadline :headline="new Headline('contents', 'コンテンツ一覧')" />
+    
     
     <div class="intro-text">
-      <p>プログラミングやクラウド技術に関する有料コンテンツを提供しています。</p>
-      <p>各コンテンツは技術記事、ガイド、チュートリアルなどのフォーマットで、実践的な知識とスキルを身につけることができます。</p>
+      <p>これまで作成した記事コンテンツを紹介します。</p>
     </div>
         <div class="content-grid">
       <ContentItem 

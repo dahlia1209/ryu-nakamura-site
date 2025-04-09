@@ -2,7 +2,6 @@ export class ContentItem {
   constructor(
     public id: number,
     public title: string,
-    public description: string,
     public previewContent: string,
     public imageUrl: string,
     public price: number,
@@ -11,6 +10,8 @@ export class ContentItem {
     public publishDate: Date,
     public isFeatured: boolean = false,
     public slug: string = "",
+    public previewTextLength: number =100,
+    public noteUrl?: string,
   ) {
     if (!this.slug) {
       // Generate slug from title if not provided

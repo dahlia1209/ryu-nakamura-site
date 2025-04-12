@@ -3,8 +3,13 @@ import { RouterLink, RouterView } from 'vue-router'
 import {Headline} from '@/models/page'
 import HeaderHeadlineItem from './HeaderHeadlineItem.vue'
 import { useSiteStore } from '@/stores/site'
+import { useAuthStore } from '@/stores/auth'
+import { ref, computed } from 'vue'
 
 const siteStore = useSiteStore()
+const authStore = useAuthStore()
+
+const isLoading = ref(false)
 
 const toggleMenu = () => {
   siteStore.isMenuOpen=!siteStore.isMenuOpen
@@ -13,6 +18,30 @@ const toggleMenu = () => {
 const closeMenu = () => {
   siteStore.isMenuOpen=false
 };
+
+const handleLoginClick = async () => {
+  if (authStore.isLoggedIn) {
+    // ログアウト処理
+    await authStore.logout()
+  } else {
+    // ログイン処理
+    isLoading.value = true
+    try {
+      await authStore.login()
+    } catch (error) {
+      console.error('Login failed:', error)
+    } finally {
+      isLoading.value = false
+    }
+  }
+}
+
+const loginButtonText = computed(() => {
+  if (isLoading.value) return 'ログイン中...'
+  return authStore.isLoggedIn ? '' : 'ログイン'
+})
+
+const color=computed(()=>authStore.isLoggedIn ? '#e74c3c' : '#06C755')
 
 </script>
 
@@ -34,13 +63,18 @@ const closeMenu = () => {
         
     </div>
     <div class="header-right">
-            <!-- ログインボタン追加 -->
-            <button class="login-button" >ログイン</button>
-            
-            <button v-if="siteStore.isMobile" class="menu-button" @click="toggleMenu" aria-label="メニューを開く">
-                <span v-for="i in [1,2,3]" :key="i"  :class="['bar',{ 'open': siteStore.isMenuOpen }]"></span>
-            </button>
-        </div>
+
+    <button v-if="authStore.isLoggedIn" class="login-button" @click="handleLoginClick" :disabled="isLoading">
+      <img src="/src/assets/user_icon.svg" class="user_icon" alt="user_icon">
+    </button>
+    <button v-else @click="handleLoginClick" class="login-button" :disabled="isLoading">
+      ログイン
+    </button>
+
+    <button v-if="siteStore.isMobile" class="menu-button" @click="toggleMenu" aria-label="メニューを開く">
+      <span v-for="i in [1, 2, 3]" :key="i" :class="['bar', { 'open': siteStore.isMenuOpen }]"></span>
+    </button>
+  </div>
 </template>
 
 <style scoped>
@@ -132,66 +166,35 @@ const closeMenu = () => {
 .login-button:hover {
     opacity: 0.8;
 }
-
-/* header {
-    line-height: 1.5;
-    max-height: 100vh;
+/* ユーザー情報表示用スタイル追加 */
+.user-info {
+  margin-right: 15px;
+  font-size: 0.9rem;
+  color: #333;
 }
 
-.logo {
-    display: block;
-    margin: 0 auto 2rem;
+.login-button {
+  background-color: v-bind('color');
+  color: white;
+  border-radius: 30px;
+  padding: 6px 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 0;
+  white-space: nowrap;
 }
 
-nav {
-    width: 100%;
-    font-size: 12px;
-    text-align: center;
-    margin-top: 2rem;
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-nav a.router-link-exact-active {
-    color: var(--color-text);
+.login-button:hover:not(:disabled) {
+  opacity: 0.8;
 }
 
-nav a.router-link-exact-active:hover {
-    background-color: transparent;
+.user_icon{
+  width: 20px;
+  border: 1px ;
 }
-
-nav a {
-    display: inline-block;
-    padding: 0 1rem;
-    border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-    border: 0;
-}
-
-@media (min-width: 1024px) {
-    header {
-        display: flex;
-        place-items: center;
-        padding-right: calc(var(--section-gap) / 2);
-    }
-
-    .logo {
-        margin: 0 2rem 0 0;
-    }
-
-    header .wrapper {
-        display: flex;
-        place-items: flex-start;
-        flex-wrap: wrap;
-    }
-
-    nav {
-        text-align: left;
-        margin-left: -1rem;
-        font-size: 1rem;
-
-        padding: 1rem 0;
-        margin-top: 1rem;
-    }
-} */
 </style>

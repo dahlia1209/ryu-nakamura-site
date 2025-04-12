@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted,watch } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import { useSiteStore } from '@/stores/site'
+import { useAuthStore } from '@/stores/auth'
 import HelloWorld from './components/HelloWorld.vue'
 import HeaderItem from './components/HeaderItem.vue'
 import FooterItem from './components/FooterItem.vue'
 
 const siteStore = useSiteStore()
+const authStore = useAuthStore()
 
 const updateIsMobile=()=>{
   siteStore.isMobile=window.innerWidth < 768
@@ -15,10 +17,15 @@ const updateIsMobile=()=>{
 onMounted(()=>{
   updateIsMobile();
   window.addEventListener('resize',updateIsMobile);
+  authStore.checkAuthStatus();
 })
 
 onUnmounted(()=>{
   window.removeEventListener('resize',updateIsMobile)
+})
+
+watch(() => authStore.isLoggedIn, (newVal) => {
+  console.log('Auth state changed:', newVal ? 'Logged in' : 'Logged out');
 })
 
 </script>

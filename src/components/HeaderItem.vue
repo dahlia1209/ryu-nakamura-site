@@ -28,6 +28,7 @@ const handleLoginClick = async () => {
     isLoading.value = true
     try {
       await authStore.login()
+      
     } catch (error) {
       console.error('Login failed:', error)
     } finally {
@@ -36,10 +37,15 @@ const handleLoginClick = async () => {
   }
 }
 
-const loginButtonText = computed(() => {
-  if (isLoading.value) return 'ログイン中...'
-  return authStore.isLoggedIn ? '' : 'ログイン'
-})
+// const loginButtonText = computed(() => {
+//   if (isLoading.value) return 'ログイン中...'
+//   return authStore.isLoggedIn ? '' : 'ログイン'
+// })
+
+const getToken=async ()=>{
+  const token=await authStore.getToken()
+  console.log("token",token)
+}
 
 const color=computed(()=>authStore.isLoggedIn ? '#e74c3c' : '#06C755')
 
@@ -69,6 +75,9 @@ const color=computed(()=>authStore.isLoggedIn ? '#e74c3c' : '#06C755')
     </button>
     <button v-else @click="handleLoginClick" class="login-button" :disabled="isLoading">
       ログイン
+    </button>
+    <button @click="getToken" >
+      トークン
     </button>
 
     <button v-if="siteStore.isMobile" class="menu-button" @click="toggleMenu" aria-label="メニューを開く">

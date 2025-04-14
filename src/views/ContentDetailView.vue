@@ -7,6 +7,7 @@ import { ContentItem } from '@/models/content';
 const route = useRoute();
 const router = useRouter();
 const contentStore = useContentStore();
+const contentId = parseInt(route.params.id as string);
 
 // Form data
 const name = ref('');
@@ -15,8 +16,7 @@ const error = ref<string | null>(null);
 const checkoutUrl = ref<string | null>(null);
 
 // Get content based on route param
-const content = computed<ContentItem | undefined>(() => {
-  const contentId = parseInt(route.params.id as string);
+const content = computed<ContentItem | undefined>( () => {
   return contentStore.getContentById(contentId);
 });
 
@@ -43,7 +43,7 @@ const formattedDate = computed(() => {
 });
 
 // Redirect if content not found
-onMounted(() => {
+onMounted(async () => {
   if (!content.value) {
     router.push('/contents');
   }
@@ -52,6 +52,15 @@ onMounted(() => {
   if (route.query.checkout_cancelled) {
     error.value = 'お支払いがキャンセルされました。再度お試しください。';
   }
+
+  const response=await contentStore.contentService.getContentByNo(contentId)
+  if (!response.ok) {
+      throw new Error(`Session status API error: ${response.status} ${response.statusText}`);
+  }
+
+  console.log("response",response.json())
+  
+
 });
 
 // Watch for route query changes
@@ -72,11 +81,11 @@ async function handleCheckout() {
     // Build success and cancel URLs (use absolute URLs with origin)
     const origin = window.location.origin;
     const successUrl = `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${origin}/contents/${content.value.id}?checkout_cancelled=true`;
+    const cancelUrl = `${origin}/contents/${content.value.titleNo}?checkout_cancelled=true`;
     
     // Call content store to create checkout session
-    const contentItem = contentStore.getContentById(content.value.id)
-    const result = await contentStore.service.createContentCheckout(
+    const contentItem = contentStore.getContentById(content.value.titleNo)
+    const result = await contentStore.checkoutService.createContentCheckout(
       contentItem!,
       successUrl,
       cancelUrl
@@ -137,7 +146,7 @@ async function handleCheckout() {
 
     <div class="content-body">
 
-      <p>{{ content.previewContent }}</p>
+      <div v-html="content.contentHtml"></div>
 
 
       <section class="purchase-section">

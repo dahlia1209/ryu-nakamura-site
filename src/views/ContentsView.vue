@@ -36,7 +36,7 @@ const contentStore = useContentStore();
         <div class="content-grid">
       <ContentItem 
         v-for="content in contentStore.contentItems" 
-        :key="content.id" 
+        :key="content.titleNo" 
         :content="content" 
       />
     </div>

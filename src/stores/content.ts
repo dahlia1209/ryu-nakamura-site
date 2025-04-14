@@ -2,10 +2,12 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { ContentItem,WorkItem } from '@/models/content'
 import { useCheckoutService } from '@/services/checkoutService'
+import { useContentService } from '@/services/contentService'
 
 export const useContentStore = defineStore('contact', {
     state: () => ({
-      service:useCheckoutService(),
+      checkoutService:useCheckoutService(),
+      contentService:useContentService(),
       workItems:[
         {
           id: 1,
@@ -19,33 +21,24 @@ export const useContentStore = defineStore('contact', {
       ],
       contentItems:[
         {
-          id:1,
+          titleNo:1,
           title:"#1 原点に立ち戻る",
-          previewContent:"進むべき方向性がわからなくなったときに、原点に戻って考えるという手法がとられることがある。例えば、野球において投手が何を投げればわからなくなったときは、外角低めのストレートを投げることを戦後初の三冠王である野村克也さんが語っていた。",
-          imageUrl:"/thumbnail/001.jpg",
+          contentText:"進むべき方向性がわからなくなったときに、原点に戻って考えるという手法がとられることがある。例えば、野球において投手が何を投げればわからなくなったときは、外角低めのストレートを投げることを戦後初の三冠王である野村克也さんが語っていた。",
+          contentHtml:"<h2>はじめに-外角低めストレート</h1><p>進むべき方向性がわからなくなったときに、原点に戻って考えるという手法がとられることがある。例えば、野球において投手が何を投げればわからなくなったときは、外角低めのストレートを投げることを戦後初の三冠王である野村克也さんが語っていた。なぜ外角低めのストレートが原点なのかは不明だが、困ったら原点に戻るという考え方には私もならいたい。</p><p>私は今後どうやって生きていくかということに最近関心を持ち始めている。それは誰もが関心あることだと思うが、私の場合きっかけは今の生活を今後も続けられるのか想像できないからであった。私は大卒以降ITエンジニアのサラリーマンとして収入を得て日々暮らしている。サラリーマンの生活は始めた当初は業務に慣れなかったこともあり社会の厳しさを痛感していたが、30歳になるころには慣れてきて、今後について考える時間も生まれてきた。そこで考えたことはこれからは会社に頼らず自分自身の力で稼ぐ必要があるということであった。</p></div>",
+          imageUrl:"/thumbnail/0001.jpg",
           price:220,
-          category:"技術書",
+          category:"article",
           tags:["初投稿"],
           publishDate:new Date(2025, 3, 4),
-          isFeatured:false,
           noteUrl:"https://note.com/kenjinishizaki/n/n168c8e816312"
         } as ContentItem,
       ]
     }),
     getters: {
       getContentById:(state)=>{
-        return (id:number) =>state.contentItems.find(item => item.id === id)
-      },
-      
-      getFeaturedContent :(state)=>{
-        return state.contentItems.filter(item => item.isFeatured)
+        return (id:number) =>state.contentItems.find(item => item.titleNo === id)
       },
 
-      
-      getContentBySlug :(state)=> {
-        return (slug: string) => state.contentItems.find(item => item.slug === slug)
-      },
-      
       getContentByCategory :(state)=> {
         return (category: string) => state.contentItems.filter(item => item.category === category)
       }

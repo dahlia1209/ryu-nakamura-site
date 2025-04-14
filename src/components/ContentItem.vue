@@ -32,13 +32,12 @@ function formatPrice(price: number): string {
         :alt="content.title"
         onerror="this.src='/placeholder.jpg'"
       >
-      <div v-if="content.isFeatured" class="featured-badge">おすすめ</div>
     </div>
     
     <div class="content-info">
       <h3>{{ content.title }}</h3>
       
-      <p class="description">{{ content.previewContent }}</p>
+      <div class="description">{{ content.contentText }}</div>
       
       <div class="meta-info">
         <div class="tags">
@@ -54,7 +53,7 @@ function formatPrice(price: number): string {
       </div>
       
       <div class="action-buttons">
-        <RouterLink :to="`/contents/${content.id}`" class="details-button">
+        <RouterLink :to="`/contents/${content.titleNo}`" class="details-button">
           詳細を見る
         </RouterLink>
         <a v-if="content.noteUrl" :href="content.noteUrl" target="_blank" class="note-link">

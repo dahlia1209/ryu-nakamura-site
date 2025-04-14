@@ -24,7 +24,7 @@ onMounted(async () => {
   
   try {
     // Fetch session data from API
-    const data = await contentStore.service.getSessionStatus(sessionId);
+    const data = await contentStore.checkoutService.getSessionStatus(sessionId);
     sessionData.value = data;
     console.log("sessionData.value",sessionData.value)
     isLoading.value = false;

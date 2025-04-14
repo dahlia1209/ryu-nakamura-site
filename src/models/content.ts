@@ -1,25 +1,17 @@
 export class ContentItem {
   constructor(
-    public id: number,
-    public title: string,
-    public previewContent: string,
+    public titleNo: number,
+    public title: string, 
+    public contentText: string,
+    public contentHtml: string,
     public imageUrl: string,
     public price: number,
     public category: string,
     public tags: string[],
     public publishDate: Date,
-    public isFeatured: boolean = false,
-    public slug: string = "",
     public previewTextLength: number =100,
     public noteUrl?: string,
   ) {
-    if (!this.slug) {
-      // Generate slug from title if not provided
-      this.slug = this.title
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-');
-    }
   }
 }
 

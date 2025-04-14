@@ -26,7 +26,7 @@ const msalConfig = {
 
 // ログインリクエスト設定
 const loginRequest = {
-  scopes: ['openid'],
+  scopes: ['openid', 'profile', 'offline_access','https://ryunakamura.onmicrosoft.com/ryu-nakamura-api/tasks.read'],
 };
 
 // MSAL インスタンスの作成
@@ -84,6 +84,7 @@ export function useAuthService() {
     }
 
     const silentRequest: SilentRequest = {
+      // scopes: ['api://b1c69e9f-d996-472c-9f8b-9f495d5ebba3/tasks.read'],
       scopes: loginRequest.scopes,
       account,
     };

@@ -24,7 +24,7 @@ export function useCheckoutService(apiBaseUrl: string = import.meta.env.VITE_API
         name: contentItem.title,
         price: contentItem.price,
         quantity: 1,
-        description: contentItem.previewContent,
+        description: contentItem.contentText,
         images: contentItem.imageUrl  ? [`${apiBaseUrl}/${contentItem.imageUrl}`] : []
       }
     ];
@@ -35,9 +35,9 @@ export function useCheckoutService(apiBaseUrl: string = import.meta.env.VITE_API
       success_url: successUrl,
       cancel_url: cancelUrl,
       customer_email: customerEmail,
-      order_id: `content-${contentItem.id}-${Date.now()}`,
+      order_id: `content-${contentItem.titleNo}-${Date.now()}`,
       metadata: {
-        contentId: contentItem.id,
+        contentId: contentItem.titleNo,
         contentTitle: contentItem.title
       }
     };

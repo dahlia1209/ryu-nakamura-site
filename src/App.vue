@@ -10,6 +10,7 @@ import FooterItem from './components/FooterItem.vue'
 const siteStore = useSiteStore()
 const authStore = useAuthStore()
 
+
 const updateIsMobile=()=>{
   siteStore.isMobile=window.innerWidth < 768
 }
@@ -25,7 +26,6 @@ onUnmounted(()=>{
 })
 
 watch(() => authStore.isLoggedIn, (newVal) => {
-  console.log('Auth state changed:', newVal ? 'Logged in' : 'Logged out');
 })
 
 </script>

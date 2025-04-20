@@ -44,6 +44,13 @@ export const useContentStore = defineStore('contact', {
       }
     },
     actions: {
-      fakeAction() {}
+      fakeAction() {},
+      updateContentHtml(contentId: number, newContentHtml: string) {
+        const contentIndex = this.contentItems.findIndex(item => item.titleNo === contentId);
+        if (contentIndex !== -1) {
+          // contentItemsの特定のアイテムのcontentHtmlを更新
+          this.contentItems[contentIndex].contentHtml = newContentHtml;
+        }
+      },
     },
 })

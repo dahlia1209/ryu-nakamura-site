@@ -55,6 +55,11 @@ const router = createRouter({
       name: 'contact',
       component: () => import('../views/ContactView.vue'),
     },
+    {
+      path: '/auth/callback',
+      name: 'authCallback',
+      component: () => import('../views/AuthCallBack.vue'),
+    },
   ],
 
 })

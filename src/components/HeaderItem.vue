@@ -5,30 +5,43 @@ import HeaderHeadlineItem from './HeaderHeadlineItem.vue'
 import { useSiteStore } from '@/stores/site'
 import { useAuthStore } from '@/stores/auth'
 import { ref, computed } from 'vue'
+import { useUserStore } from '@/stores/user';
+import { User } from '@/models/user';
+import { useRoute, useRouter } from 'vue-router';
 
 const siteStore = useSiteStore()
 const authStore = useAuthStore()
+const userStore = useUserStore()
+const route = useRoute();
+const router = useRouter();
 
-const isLoading = ref(false)
+const localStore=(()=>{
+  /*state*/
+  const isLoading = ref(false)
+  const error = ref<string | null>(null);
 
-const toggleMenu = () => {
+  /*getter*/
+  const color=computed(()=>authStore.isLoggedIn ? '#e74c3c' : '#06C755')
+
+  /*action*/
+  const toggleMenu = () => {
   siteStore.isMenuOpen=!siteStore.isMenuOpen
 };
 
-const closeMenu = () => {
-  siteStore.isMenuOpen=false
-};
-
 const handleLoginClick = async () => {
-  if (authStore.isLoggedIn) {
+  if (authStore.isLoggedIn &&authStore.userInfo) {
     // ログアウト処理
-    await authStore.logout()
+    await authStore.authService.logout(authStore.userInfo)
+    authStore.checkAuthStatus()
   } else {
     // ログイン処理
     isLoading.value = true
     try {
-      await authStore.login()
-      
+      const response=await authStore.authService.login()
+      authStore.checkAuthStatus()
+      await upsertUser()
+      router.go(0)
+
     } catch (error) {
       console.error('Login failed:', error)
     } finally {
@@ -37,18 +50,48 @@ const handleLoginClick = async () => {
   }
 }
 
-// const loginButtonText = computed(() => {
-//   if (isLoading.value) return 'ログイン中...'
-//   return authStore.isLoggedIn ? '' : 'ログイン'
-// })
+async function upsertUser() {
+    function getUser(){
+      if (!authStore.userInfo) throw new Error(`ユーザ情報が取得できません。`);
+      const user=User.fromAccountInfo(authStore.userInfo)
+      if (!user) throw new Error(`ユーザ情報が取得できません。`);
+      user.lastLogin=new Date()
+      return user
+    }
 
-const getToken=async ()=>{
-  const token=await authStore.getToken()
-  console.log("token",token)
-}
+    try {
+      // APIからコンテンツの詳細を取得
+      const user =getUser()
+      const response = await userStore.service.upsertUser(user);
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+      const userData = await response.json();
 
-const color=computed(()=>authStore.isLoggedIn ? '#e74c3c' : '#06C755')
+    } catch (err) {
+      console.error('Error fetching content:', err);
+      error.value = err instanceof Error ? err.message : 'コンテンツの取得中にエラーが発生しました。';
+    } finally {
+      isLoading.value = false;
+    }
+  };
 
+
+  /*return */
+  return{
+    state:{
+      isLoading
+    },
+    getters:{
+      color
+    },
+    actions:{
+      toggleMenu,
+      handleLoginClick,
+      upsertUser
+    }
+  }
+})()
 </script>
 
 <template>
@@ -70,17 +113,13 @@ const color=computed(()=>authStore.isLoggedIn ? '#e74c3c' : '#06C755')
     </div>
     <div class="header-right">
 
-    <button v-if="authStore.isLoggedIn" class="login-button" @click="handleLoginClick" :disabled="isLoading">
+    <button v-if="authStore.isLoggedIn" class="login-button" @click="localStore.actions.handleLoginClick()" :disabled="localStore.state.isLoading.value">
       <img src="/src/assets/user_icon.svg" class="user_icon" alt="user_icon">
     </button>
-    <button v-else @click="handleLoginClick" class="login-button" :disabled="isLoading">
+    <button v-else @click="localStore.actions.handleLoginClick()" class="login-button" :disabled="localStore.state.isLoading.value">
       ログイン
     </button>
-    <button @click="getToken" >
-      トークン
-    </button>
-
-    <button v-if="siteStore.isMobile" class="menu-button" @click="toggleMenu" aria-label="メニューを開く">
+    <button v-if="siteStore.isMobile" class="menu-button" @click="localStore.actions.toggleMenu()" aria-label="メニューを開く">
       <span v-for="i in [1, 2, 3]" :key="i" :class="['bar', { 'open': siteStore.isMenuOpen }]"></span>
     </button>
   </div>
@@ -183,7 +222,7 @@ const color=computed(()=>authStore.isLoggedIn ? '#e74c3c' : '#06C755')
 }
 
 .login-button {
-  background-color: v-bind('color');
+  background-color: v-bind('localStore.getters.color.value');
   color: white;
   border-radius: 30px;
   padding: 6px 15px;

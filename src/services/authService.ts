@@ -1,71 +1,58 @@
 import { PublicClientApplication, LogLevel,  type SilentRequest, type AccountInfo } from '@azure/msal-browser';
 
-// MSAL設定
-const msalConfig = {
-  auth: {
-    clientId: import.meta.env.VITE_AZURE_CLIENT_ID,
-    authority: import.meta.env.VITE_AZURE_AUTHORITY,
-    knownAuthorities: ["ryunakamura.b2clogin.com"],
-    redirectUri: "http://localhost:5173/", 
-  },
-  cache: {
-    cacheLocation: 'localStorage',
-    storeAuthStateInCookie: false,
-  },
-  system: {
-    loggerOptions: {
-      loggerCallback: (level: LogLevel, message: string) => {
-        if (level === LogLevel.Error) {
-          console.error(message);
-        }
-      },
-      logLevel: LogLevel.Error,
-    }
-  }
-};
-
-// ログインリクエスト設定
-const loginRequest = {
-  scopes: ['openid', 'profile', 'offline_access','https://ryunakamura.onmicrosoft.com/ryu-nakamura-api/tasks.read'],
-};
-
-// MSAL インスタンスの作成
-const msalInstance = new PublicClientApplication(msalConfig);
-let msalInitialized = false;
-
 export function useAuthService() {
-  /**
-   * ログインを実行する
-   */
+  // MSAL設定
+  const msalConfig = {
+    auth: {
+      clientId: import.meta.env.VITE_AZURE_CLIENT_ID,
+      authority: import.meta.env.VITE_AZURE_AUTHORITY,
+      knownAuthorities: ["ryunakamura.b2clogin.com"],
+      redirectUri: import.meta.env.BASE_URL, 
+    },
+    cache: {
+      cacheLocation: 'localStorage',
+      storeAuthStateInCookie: false,
+    },
+    system: {
+      loggerOptions: {
+        loggerCallback: (level: LogLevel, message: string) => {
+          if (level === LogLevel.Error) {
+            console.error(message);
+          }
+        },
+        logLevel: LogLevel.Error,
+      }
+    }
+  };
+
+  // ログインリクエスト設定
+  const loginRequest = {
+    scopes: ['openid', 'profile', 'offline_access','https://ryunakamura.onmicrosoft.com/ryu-nakamura-api/tasks.read'],
+  };
+
+  // MSAL インスタンスの作成
+  const msalInstance = new PublicClientApplication(msalConfig);
+  let msalInitialized = false;
+
   async function login() {
     try {
-      // ポップアップでログイン
-      const response = await msalInstance.loginRedirect(loginRequest);
-      // if (response) {
-      //   // ログイン成功時の処理
-      //   return response;
-      // }
+      const response=await msalInstance.loginPopup(loginRequest)
+      return response
     } catch (error) {
       console.error('Login error:', error);
       throw error;
     }
   }
 
-  /**
-   * ログアウトを実行する
-   */
-  function logout() {
-    const currentAccount = msalInstance.getActiveAccount();
-    if (currentAccount) {
-      msalInstance.logoutRedirect({
-        account: currentAccount,
+  async function  logout(userInfo:AccountInfo) {
+    if (userInfo!=null) {
+      const response=await msalInstance.logoutRedirect({
+        account: userInfo,
       });
+      return response
     }
   }
 
-  /**
-   * 現在サインインしているユーザー情報を取得
-   */
   function getAccount(): AccountInfo | null {
     const currentAccounts = msalInstance.getAllAccounts();
     if (currentAccounts.length === 0) {
@@ -74,9 +61,6 @@ export function useAuthService() {
     return currentAccounts[0];
   }
 
-  /**
-   * トークンを取得する
-   */
   async function getToken(): Promise<string | null> {
     const account = getAccount();
     if (!account) {
@@ -84,7 +68,6 @@ export function useAuthService() {
     }
 
     const silentRequest: SilentRequest = {
-      // scopes: ['api://b1c69e9f-d996-472c-9f8b-9f495d5ebba3/tasks.read'],
       scopes: loginRequest.scopes,
       account,
     };
@@ -104,9 +87,6 @@ export function useAuthService() {
     }
   }
 
-  /**
-   * ユーザーがログインしているか確認
-   */
   function isAuthenticated(): boolean {
     return !!getAccount();
   }
@@ -134,6 +114,8 @@ export function useAuthService() {
     }
     return true;
   }
+
+  
 
   return {
     login,

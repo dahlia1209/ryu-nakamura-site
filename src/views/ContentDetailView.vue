@@ -1,116 +1,179 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch,useTemplateRef, toValue } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useContentStore } from '@/stores/content';
+import { useAuthStore } from '@/stores/auth';
+import { useUserStore } from '@/stores/user';
 import { ContentItem } from '@/models/content';
+
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const route = useRoute();
 const router = useRouter();
 const contentStore = useContentStore();
-const contentId = parseInt(route.params.id as string);
+const authStore = useAuthStore();
+const userStore = useUserStore();
+const target = useTemplateRef('target-to-scroll')
 
-// Form data
-const name = ref('');
-const isSubmitting = ref(false);
-const error = ref<string | null>(null);
-const checkoutUrl = ref<string | null>(null);
+const localStore=(()=>{
+  /*state*/
+  const isSubmitting = ref(false);
+  const error = ref<string | null>(null);
+  const checkoutUrl = ref<string | null>(null);
+  const isLoading = ref(true); 
+  const isSubscribed=ref(false)
 
-// Get content based on route param
-const content = computed<ContentItem | undefined>( () => {
-  return contentStore.getContentById(contentId);
-});
+  /*getter*/
+  const contentId = computed(()=>parseInt(route.params.id as string));
 
-// Format price
-const formattedPrice = computed(() => {
-  if (!content.value) return '';
+  const content = computed<ContentItem | undefined>( () => {
+    return contentStore.getContentById(contentId.value);
+  });
+
+  // Format price
+  const formattedPrice = computed(() => {
+    if (!content.value) return '';
+    
+    return new Intl.NumberFormat('ja-JP', {
+      style: 'currency',
+      currency: 'JPY',
+      currencyDisplay: 'symbol'
+    }).format(content.value.price);
+  });
+
+  // Format date
+  const formattedDate = computed<string>(() => {
+    if (!content.value) return '';
+    
+    return new Intl.DateTimeFormat('ja-JP', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(content.value.publishDate);
+  });
+
+  /*action*/
+  // Handle checkout process
+  async function handleCheckout() {
+    if (!content.value) return;
+    
+    try {
+      isSubmitting.value = true;
+      error.value = null;
+      
+      // Build success and cancel URLs (use absolute URLs with origin)
+      const origin = window.location.origin;
+      const successUrl = `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${origin}/contents/${content.value.titleNo}?checkout_cancelled=true`;
+      
+      // Call content store to create checkout session
+      const contentItem = contentStore.getContentById(content.value.titleNo)
+      const result = await contentStore.checkoutService.createContentCheckout(
+        contentItem!,
+        successUrl,
+        cancelUrl
+      );
+      
+      // If successful, redirect to Stripe checkout
+      if (result && result.url) {
+        checkoutUrl.value = result.url;
+        window.location.href = result.url;
+      } else {
+        error.value = '決済ページの作成に失敗しました。もう一度お試しください。';
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '決済処理中にエラーが発生しました。';
+      console.error('Checkout error:', err);
+    } finally {
+      isSubmitting.value = false;
+    }
+  };
+  async function fetchContent() {
+    try {
+      isLoading.value = true;
+      // APIからコンテンツの詳細を取得
+      const response = await contentStore.contentService.getContentByNo(contentId.value);
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+
+      const contentData = await response.json();
+
+      if (contentData.length == 1) {
+        // ストアのアクションを呼び出して更新
+        contentStore.updateContentHtml(contentId.value, contentData[0].content_html);
+        isSubscribed.value = true
+      }
+    } catch (err) {
+      console.error('Error fetching content:', err);
+      error.value = err instanceof Error ? err.message : 'コンテンツの取得中にエラーが発生しました。';
+    } finally {
+      isLoading.value = false;
+    }
+  };
   
-  return new Intl.NumberFormat('ja-JP', {
-    style: 'currency',
-    currency: 'JPY',
-    currencyDisplay: 'symbol'
-  }).format(content.value.price);
-});
+  function scrollToTarget(){ 
+    if(target.value==null) return
+    target.value.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      }); 
+      };
 
-// Format date
-const formattedDate = computed(() => {
-  if (!content.value) return '';
-  
-  return new Intl.DateTimeFormat('ja-JP', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }).format(content.value.publishDate);
-});
+  //戻り値
+return {
+  state:{
+    isSubmitting,
+    error,
+    checkoutUrl,
+    isLoading,
+    isSubscribed
+  },
+  getters:{
+    content,
+    formattedPrice,
+    contentId,
+    formattedDate
+  },
+  actions:{
+    handleCheckout,
+    fetchContent,
+    scrollToTarget,
+  }
+}
+})()
+
 
 // Redirect if content not found
 onMounted(async () => {
-  if (!content.value) {
+  if (!localStore.getters.content.value) {
     router.push('/contents');
+    return;
   }
   
   // Check if there was a cancelled checkout
   if (route.query.checkout_cancelled) {
-    error.value = 'お支払いがキャンセルされました。再度お試しください。';
+    localStore.state.error.value = 'お支払いがキャンセルされました。再度お試しください。';
   }
 
-  const response=await contentStore.contentService.getContentByNo(contentId)
-  if (!response.ok) {
-      throw new Error(`Session status API error: ${response.status} ${response.statusText}`);
-  }
-
-  console.log("response",response.json())
+  if (!authStore.isAuthenticated) localStore.state.isLoading.value=false
+  else await localStore.actions.fetchContent()
   
-
 });
 
 // Watch for route query changes
 watch(() => route.query, (newQuery) => {
   if (newQuery.checkout_cancelled) {
-    error.value = 'お支払いがキャンセルされました。再度お試しください。';
+    localStore.state.error.value = 'お支払いがキャンセルされました。再度お試しください。';
   }
 });
-
-// Handle checkout process
-async function handleCheckout() {
-  if (!content.value) return;
-  
-  try {
-    isSubmitting.value = true;
-    error.value = null;
-    
-    // Build success and cancel URLs (use absolute URLs with origin)
-    const origin = window.location.origin;
-    const successUrl = `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${origin}/contents/${content.value.titleNo}?checkout_cancelled=true`;
-    
-    // Call content store to create checkout session
-    const contentItem = contentStore.getContentById(content.value.titleNo)
-    const result = await contentStore.checkoutService.createContentCheckout(
-      contentItem!,
-      successUrl,
-      cancelUrl
-    );
-    
-    // If successful, redirect to Stripe checkout
-    if (result && result.url) {
-      checkoutUrl.value = result.url;
-      window.location.href = result.url;
-    } else {
-      error.value = '決済ページの作成に失敗しました。もう一度お試しください。';
-    }
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : '決済処理中にエラーが発生しました。';
-    console.error('Checkout error:', err);
-  } finally {
-    isSubmitting.value = false;
-  }
-}
 
 
 </script>
 
 <template>
-  <div v-if="content" class="content-detail">
+  <div class="content-detail">
+    
     <div class="back-link">
       <RouterLink to="/contents">&larr; コンテンツ一覧に戻る</RouterLink>
 
@@ -119,91 +182,85 @@ async function handleCheckout() {
       </div>
     </div>
 
-    <!-- 注意喚起メッセージ -->
-    <!-- <div class="test-environment-warning">
-      <div class="warning-icon">⚠️</div>
-      <div class="warning-content">
-        <h3>テスト環境のお知らせ - 購入しないでください</h3>
-        <p>これはテスト環境です。このコンテンツは実際には存在せず、<strong>購入しても実際のコンテンツは提供されません</strong>。</p>
-        <p>決済機能はテスト用に設定されていますが、<strong>実際の決済が行われる可能性があります</strong>ので購入操作は行わないでください。</p>
-      </div>
-    </div> -->
-
     <div class="content-header">
       <div class="featured-image">
-        <img :src="content.imageUrl" :alt="content.title">
+        <img :src="localStore.getters.content.value!.imageUrl" :alt="localStore.getters.content.value!.title">
       </div>
-      <h1>{{ content.title }}</h1>
+      <h1>{{ localStore.getters.content.value!.title }}</h1>
       <div class="content-meta">
-        <div class="publish-date">公開日: {{ formattedDate }}</div>
-        <div class="price-display" @click="null">
-          <span class="price-badge">{{ formattedPrice }}</span>
+        <div class="publish-date">公開日: {{ localStore.getters.formattedDate.value }}</div>
+        <div v-if="[
+          !localStore.state.isLoading.value,
+          !localStore.state.isSubscribed.value
+        ].every(x=>x==true)" class="price-display" @click="localStore.actions.scrollToTarget()">
+          <span class="price-badge">{{ localStore.getters.formattedPrice.value }}</span>
         </div>
+        <span v-else-if="[
+          !localStore.state.isLoading.value,
+          localStore.state.isSubscribed.value
+        ].every(x=>x==true)" class="subscribed-badge">購入済み</span>
+      </div>
+    </div>
+
+    <LoadingSpinner v-if="localStore.state.isLoading.value" />
+
+    <div v-else class="content-body" v-html="localStore.getters.content.value!.contentHtml"></div>
+
+    <section v-if="[
+          !localStore.state.isLoading.value,
+          !localStore.state.isSubscribed.value
+        ].every(x=>x==true)" class="purchase-section">
+      <div class="split-block">
+        <div class="split-border"></div>
+        <div class="split-content">ここから先は</div>
       </div>
 
-
-    </div>
-
-    <div class="content-body">
-
-      <div v-html="content.contentHtml"></div>
-
-
-      <section class="purchase-section">
-        <!-- <div class="price-card"> -->
-          <div class="split-block">
-            <div class="split-border"></div>
-            <div class="split-content">ここから先は</div>
+      <div class="simplified-checkout">
+        <div class="payment-method-section">
+          <div class="checkout-price-section">
+            <div class="price">{{ localStore.getters.formattedPrice.value }}</div>
           </div>
-          
-          <div class="simplified-checkout">
-            
-            <div class="payment-method-section">
-              
-              <div class="checkout-price-section">
-                <div class="price">{{ formattedPrice }}</div>
-              </div>
-              <h3>お支払い方法</h3>
-              <div class="payment-option selected">
-                <div class="payment-option-radio">
-                  <div class="radio-inner"></div>
-                </div>
-                <span>クレジットカード決済</span>
-                <div class="payment-cards">
-                  <img src="/paymentMethod/visa.png" alt="Visa" class="payment-icon">
-                  <img src="/paymentMethod/mastercard.png" alt="Mastercard" class="payment-icon">
-                  <img src="/paymentMethod/amex.png" alt="American Express" class="payment-icon">
-                  <img src="/paymentMethod/jcb.png" alt="JCB" class="payment-icon">
-                </div>
-              </div>
+          <h3>お支払い方法</h3>
+          <div class="payment-option selected">
+            <div class="payment-option-radio">
+              <div class="radio-inner"></div>
             </div>
-            
-            <div v-if="error" class="error-message">
-              {{ error }}
+            <span>クレジットカード決済</span>
+            <div class="payment-cards">
+              <img src="/paymentMethod/visa.png" alt="Visa" class="payment-icon">
+              <img src="/paymentMethod/mastercard.png" alt="Mastercard" class="payment-icon">
+              <img src="/paymentMethod/amex.png" alt="American Express" class="payment-icon">
+              <img src="/paymentMethod/jcb.png" alt="JCB" class="payment-icon">
             </div>
-            
-            <form @submit.prevent="handleCheckout" class="checkout-form">
-              <button 
-                type="submit" 
-                class="purchase-button" 
-                :disabled="isSubmitting"
-              >
-                <span v-if="isSubmitting">処理中...</span>
-                <span v-else>購入手続きへ進む</span>
-              </button>
-              <p class="secure-checkout-note">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                <span>安全な決済システムを使用しています</span>
-              </p>
-            </form>
           </div>
-        <!-- </div> -->
-      </section>
-    </div>
+        </div>
+
+        <div v-if="localStore.state.error.value" class="error-message">
+          {{ localStore.state.error.value }}
+        </div>
+
+        <form @submit.prevent="localStore.actions.handleCheckout" class="checkout-form" ref="target-to-scroll">
+          <button type="submit" class="purchase-button" :disabled="localStore.state.isSubmitting.value">
+            <span v-if="localStore.state.isSubmitting.value">処理中...</span>
+            <span v-else>購入手続きへ進む</span>
+          </button>
+          <p class="secure-checkout-note">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>安全な決済システムを使用しています</span>
+          </p>
+        </form>
+      </div>
+    </section>
   </div>
+
+  <!-- <div v-else class="error-container">
+    <p>コンテンツが見つかりませんでした</p>
+    <RouterLink to="/contents" class="back-button">コンテンツ一覧に戻る</RouterLink>
+  </div> -->
 </template>
 
 <style scoped>
@@ -212,6 +269,22 @@ async function handleCheckout() {
   margin: 0 auto;
   padding: 20px 0;
   width: 100%;
+}
+
+
+.error-container {
+  text-align: center;
+  padding: 50px 0;
+}
+
+.back-button {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 8px 16px;
+  background-color: #41b883;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
 }
 
 .back-link {
@@ -233,41 +306,6 @@ async function handleCheckout() {
   color: #721c24;
   border-radius: 4px;
   font-size: 0.9rem;
-}
-
-/* テスト環境の警告スタイル */
-.test-environment-warning {
-  display: flex;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  border-left: 5px solid #dc3545;
-  border-radius: 4px;
-  padding: 16px;
-  margin-bottom: 25px;
-  align-items: flex-start;
-}
-
-.warning-icon {
-  font-size: 24px;
-  margin-right: 15px;
-  flex-shrink: 0;
-  margin-top: 3px;
-}
-
-.warning-content h3 {
-  margin: 0 0 10px 0;
-  color: #721c24;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.warning-content p {
-  margin: 5px 0;
-  color: #721c24;
-}
-
-.warning-content strong {
-  font-weight: 700;
 }
 
 .content-header {
@@ -325,23 +363,23 @@ async function handleCheckout() {
   display: flex;
   flex-direction: column;
   grid-template-columns: 2fr 1fr;
-  gap: 40px;
 }
+
 
 .content-description,
 .content-preview {
   margin-bottom: 30px;
 }
 
-h2 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  color: var(--color-heading);
-  position: relative;
-  padding-left: 15px;
+:deep(h2) {
+  font-size: 1.8rem;
+  margin: 1.5rem 0 1rem;
+  color: #2D3E50;
+  line-height: 1.4;
+  padding-top: 10px;
 }
 
-h2::before {
+/* .content-body h2::before {
   content: "";
   position: absolute;
   left: 0;
@@ -350,66 +388,12 @@ h2::before {
   width: 5px;
   background-color: #41b883;
   border-radius: 2px;
-}
+} */
 
 p {
   line-height: 1.7;
   color: var(--color-text);
   margin-bottom: 15px;
-}
-
-.preview-content {
-  position: relative;
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-  max-height: 200px;
-  overflow: hidden;
-}
-
-.preview-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  background: linear-gradient(to bottom, rgba(255,255,255,0) 20%, rgba(255,255,255,0.9) 80%, rgba(255,255,255,1) 100%);
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  padding-bottom: 20px;
-}
-
-.overlay-text {
-  background-color: #41b883;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 20px;
-  font-weight: 500;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.price-card {
-  border-radius: 8px;
-  padding: 25px;
-  position: sticky;
-  top: 20px;
-  position: relative;
-}
-
-/* テストバッジ */
-.test-badge {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  background-color: #dc3545;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .price {
@@ -540,6 +524,13 @@ input {
   font-weight: 500;
 }
 
+.subscribed-badge {
+  padding: 4px 15px;
+  transition: all 0.3s;
+  color: green;;
+  font-weight: 600;
+}
+
 .price-display:hover .price-badge {
   background-color: #f8f8f8;
   border-color: #000;
@@ -566,7 +557,6 @@ input {
 .checkout-price-section {
   text-align: center;
   padding-bottom: 15px;
-  /* border-bottom: 1px solid #eee; */
 }
 
 .payment-method-section h3 {
@@ -624,12 +614,12 @@ input {
 }
 
 .split-block {
-            position: relative;
-            width: 100%;
-            background-color: white;
-        }
+  position: relative;
+  width: 100%;
+  background-color: white;
+}
 
-.split-content{
+.split-content {
   font-weight: 700; 
   text-align: center;
   position: relative;
@@ -640,15 +630,14 @@ input {
 }
 
 .split-border {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            border-top: 1px dashed #666;
-            z-index: 1;
-        }
-
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  border-top: 1px dashed #666;
+  z-index: 1;
+}
 
 @media (max-width: 768px) {
   .content-body {

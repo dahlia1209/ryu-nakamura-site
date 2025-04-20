@@ -16,7 +16,7 @@ app.use(router)
 const initApp = async () => {
     try {
       const authStore = useAuthStore(pinia)
-      await authStore.initialize()
+      await authStore.authService.initialize()
       app.mount('#app')
     } catch (error) {
       console.error('Failed to initialize application:', error)

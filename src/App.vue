@@ -3,12 +3,14 @@ import { ref, onMounted, onUnmounted,watch } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import { useSiteStore } from '@/stores/site'
 import { useAuthStore } from '@/stores/auth'
+import { useUserStore } from '@/stores/user'
 import HelloWorld from './components/HelloWorld.vue'
 import HeaderItem from './components/HeaderItem.vue'
 import FooterItem from './components/FooterItem.vue'
 
 const siteStore = useSiteStore()
 const authStore = useAuthStore()
+const userStore = useUserStore()
 
 
 const updateIsMobile=()=>{
@@ -19,6 +21,7 @@ onMounted(()=>{
   updateIsMobile();
   window.addEventListener('resize',updateIsMobile);
   authStore.checkAuthStatus();
+  if (authStore.userInfo) userStore.updateUserFromAccountInfo(authStore.userInfo)
 })
 
 onUnmounted(()=>{

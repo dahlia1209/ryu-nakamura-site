@@ -4,7 +4,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { useContentStore } from '@/stores/content';
 import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
-import { ContentItem } from '@/models/content';
+import { useOrderStore } from '@/stores/order';
+import { Content } from '@/models/content';
+import { OrderItem } from '@/models/order';
 
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
@@ -13,6 +15,7 @@ const router = useRouter();
 const contentStore = useContentStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
+const orderStore = useOrderStore();
 const target = useTemplateRef('target-to-scroll')
 
 const localStore=(()=>{
@@ -24,10 +27,10 @@ const localStore=(()=>{
   const isSubscribed=ref(false)
 
   /*getter*/
-  const contentId = computed(()=>parseInt(route.params.id as string));
+  const contentTitleNo = computed(()=>parseInt(route.params.id as string));
 
-  const content = computed<ContentItem | undefined>( () => {
-    return contentStore.getContentById(contentId.value);
+  const content = computed<Content | undefined>( () => {
+    return contentStore.getContentByTitleNo(contentTitleNo.value);
   });
 
   // Format price
@@ -54,63 +57,87 @@ const localStore=(()=>{
 
   /*action*/
   // Handle checkout process
-  async function handleCheckout() {
-    if (!content.value) return;
+  // async function handleCheckout() {
+  //   if (!content.value) return;
     
-    try {
-      isSubmitting.value = true;
-      error.value = null;
+  //   try {
+  //     isSubmitting.value = true;
+  //     error.value = null;
       
-      // Build success and cancel URLs (use absolute URLs with origin)
-      const origin = window.location.origin;
-      const successUrl = `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-      const cancelUrl = `${origin}/contents/${content.value.titleNo}?checkout_cancelled=true`;
+  //     // Build success and cancel URLs (use absolute URLs with origin)
+  //     const origin = window.location.origin;
+  //     const successUrl = `${origin}/${route.fullPath}?session_id={CHECKOUT_SESSION_ID}`;
+  //     const cancelUrl = `${origin}/${route.fullPath}?checkout_cancelled=true`;
       
-      // Call content store to create checkout session
-      const contentItem = contentStore.getContentById(content.value.titleNo)
-      const result = await contentStore.checkoutService.createContentCheckout(
-        contentItem!,
-        successUrl,
-        cancelUrl
-      );
+  //     // Call content store to create checkout session
+  //     const contentItem = contentStore.getContentByTitleNo(content.value.titleNo)
+  //     const result = await contentStore.checkoutService.createContentCheckout(
+  //       contentItem!,
+  //       successUrl,
+  //       cancelUrl
+  //     );
       
-      // If successful, redirect to Stripe checkout
-      if (result && result.url) {
-        checkoutUrl.value = result.url;
-        window.location.href = result.url;
-      } else {
-        error.value = '決済ページの作成に失敗しました。もう一度お試しください。';
-      }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : '決済処理中にエラーが発生しました。';
-      console.error('Checkout error:', err);
-    } finally {
-      isSubmitting.value = false;
-    }
-  };
-  async function fetchContent() {
+  //     // If successful, redirect to Stripe checkout
+  //     if (result && result.url) {
+  //       checkoutUrl.value = result.url;
+  //       window.location.href = result.url;
+  //     } else {
+  //       error.value = '決済ページの作成に失敗しました。もう一度お試しください。';
+  //     }
+  //   } catch (err) {
+  //     error.value = err instanceof Error ? err.message : '決済処理中にエラーが発生しました。';
+  //     console.error('Checkout error:', err);
+  //   } finally {
+  //     isSubmitting.value = false;
+  //   }
+  // };
+
+  
+
+  async function fetchOrders() {
     try {
       isLoading.value = true;
       // APIからコンテンツの詳細を取得
-      const response = await contentStore.contentService.getContentByNo(contentId.value);
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
-      }
+      if (!userStore.user ) throw new Error("ログインされていません。")
+      if (!content.value ) throw new Error("コンテンツが取得できません")
+      const orders = await orderStore.service.getPurchasedOrders(userStore.user.id,content.value.id);
 
-      const contentData = await response.json();
-
-      if (contentData.length == 1) {
-        // ストアのアクションを呼び出して更新
-        contentStore.updateContentHtml(contentId.value, contentData[0].content_html);
+      if (orders.length == 1) {
+        contentStore.updateContentHtml(contentTitleNo.value, orders[0].content.contentHtml);
         isSubscribed.value = true
       }
     } catch (err) {
       console.error('Error fetching content:', err);
-      error.value = err instanceof Error ? err.message : 'コンテンツの取得中にエラーが発生しました。';
+      error.value = err instanceof Error ? err.message : '注文情報取得中にエラーが発生しました。';
     } finally {
       isLoading.value = false;
     }
-  };
+  }
+
+  function getOrderItem(userId:string,contentId:string){
+    return new OrderItem(
+      userId,
+      contentId
+    )
+  }
+
+  async function purchaseOrder() {
+    try {
+      if (!userStore.user ) throw new Error("ログインされていません。")
+      if (!content.value ) throw new Error("コンテンツが取得できません")
+      const orderItem=getOrderItem(userStore.user.id,content.value.id)
+      const successUrl=`${window.location.origin}${route.path}`
+      const cancelUrl=`${window.location.origin}${route.path}`
+      const checkoutUrl = await orderStore.service.purchaseOrder(orderItem,successUrl,cancelUrl);
+      window.location.href = checkoutUrl
+
+    } catch (err) {
+      console.error('Error fetching content:', err);
+      error.value = err instanceof Error ? err.message : '注文情報取得中にエラーが発生しました。';
+    } finally {
+
+    }
+  }
   
   function scrollToTarget(){ 
     if(target.value==null) return
@@ -132,13 +159,13 @@ return {
   getters:{
     content,
     formattedPrice,
-    contentId,
+    contentId: contentTitleNo,
     formattedDate
   },
   actions:{
-    handleCheckout,
-    fetchContent,
+    purchaseOrder,
     scrollToTarget,
+    fetchOrders,
   }
 }
 })()
@@ -157,7 +184,7 @@ onMounted(async () => {
   }
 
   if (!authStore.isAuthenticated) localStore.state.isLoading.value=false
-  else await localStore.actions.fetchContent()
+  else await localStore.actions.fetchOrders()
   
 });
 
@@ -239,7 +266,7 @@ watch(() => route.query, (newQuery) => {
           {{ localStore.state.error.value }}
         </div>
 
-        <form @submit.prevent="localStore.actions.handleCheckout" class="checkout-form" ref="target-to-scroll">
+        <form @submit.prevent="localStore.actions.purchaseOrder" class="checkout-form" ref="target-to-scroll">
           <button type="submit" class="purchase-button" :disabled="localStore.state.isSubmitting.value">
             <span v-if="localStore.state.isSubmitting.value">処理中...</span>
             <span v-else>購入手続きへ進む</span>

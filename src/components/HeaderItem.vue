@@ -39,9 +39,9 @@ const handleLoginClick = async () => {
     try {
       const response=await authStore.authService.login()
       authStore.checkAuthStatus()
-      await upsertUser()
+      const user=getUser()
+      await upsertUser(user)
       router.go(0)
-
     } catch (error) {
       console.error('Login failed:', error)
     } finally {
@@ -50,18 +50,17 @@ const handleLoginClick = async () => {
   }
 }
 
-async function upsertUser() {
-    function getUser(){
-      if (!authStore.userInfo) throw new Error(`ユーザ情報が取得できません。`);
-      const user=User.fromAccountInfo(authStore.userInfo)
-      if (!user) throw new Error(`ユーザ情報が取得できません。`);
-      user.lastLogin=new Date()
-      return user
-    }
+function getUser(){
+  if (!authStore.userInfo) throw new Error(`ユーザ情報が取得できません。`);
+  const user=User.fromAccountInfo(authStore.userInfo)
+  user.lastLogin=new Date()
+  return user
+}
+
+async function upsertUser(user:User) {
 
     try {
       // APIからコンテンツの詳細を取得
-      const user =getUser()
       const response = await userStore.service.upsertUser(user);
       if (!response.ok) {
         throw new Error(`API error: ${response.status} ${response.statusText}`);

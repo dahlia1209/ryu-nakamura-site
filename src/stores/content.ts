@@ -1,12 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { ContentItem,WorkItem } from '@/models/content'
-import { useCheckoutService } from '@/services/checkoutService'
+import { Content,WorkItem } from '@/models/content'
 import { useContentService } from '@/services/contentService'
 
 export const useContentStore = defineStore('contact', {
     state: () => ({
-      checkoutService:useCheckoutService(),
       contentService:useContentService(),
       workItems:[
         {
@@ -21,6 +19,7 @@ export const useContentStore = defineStore('contact', {
       ],
       contentItems:[
         {
+          id:'769eb42a-710c-4faa-98cb-78d21713b8ee',
           titleNo:1,
           title:"#1 原点に立ち戻る",
           contentText:"進むべき方向性がわからなくなったときに、原点に戻って考えるという手法がとられることがある。例えば、野球において投手が何を投げればわからなくなったときは、外角低めのストレートを投げることを戦後初の三冠王である野村克也さんが語っていた。",
@@ -31,22 +30,23 @@ export const useContentStore = defineStore('contact', {
           tags:["初投稿"],
           publishDate:new Date(2025, 3, 4),
           noteUrl:"https://note.com/kenjinishizaki/n/n168c8e816312"
-        } as ContentItem,
+        } as Content,
       ]
     }),
     getters: {
-      getContentById:(state)=>{
+      getContentByTitleNo:(state)=>{
         return (id:number) =>state.contentItems.find(item => item.titleNo === id)
       },
 
       getContentByCategory :(state)=> {
         return (category: string) => state.contentItems.filter(item => item.category === category)
-      }
+      },
+
     },
     actions: {
       fakeAction() {},
-      updateContentHtml(contentId: number, newContentHtml: string) {
-        const contentIndex = this.contentItems.findIndex(item => item.titleNo === contentId);
+      updateContentHtml(contentTitleNo: number, newContentHtml: string) {
+        const contentIndex = this.contentItems.findIndex(item => item.titleNo === contentTitleNo);
         if (contentIndex !== -1) {
           // contentItemsの特定のアイテムのcontentHtmlを更新
           this.contentItems[contentIndex].contentHtml = newContentHtml;

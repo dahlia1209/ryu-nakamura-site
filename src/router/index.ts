@@ -46,19 +46,9 @@ const router = createRouter({
       component: () => import('../views/PrivacyPolicyView.vue'),
     },
     {
-      path: '/checkout/success',
-      name: 'checkout-success',
-      component: () => import('../views/CheckoutSuccessView.vue'),
-    },
-    {
       path: '/contact',
       name: 'contact',
       component: () => import('../views/ContactView.vue'),
-    },
-    {
-      path: '/auth/callback',
-      name: 'authCallback',
-      component: () => import('../views/AuthCallBack.vue'),
     },
   ],
 

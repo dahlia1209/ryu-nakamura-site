@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ContentItem } from '@/models/content';
+import { Content } from '@/models/content';
 
 const props = defineProps<{
-  content: ContentItem
+  content: Content
 }>();
 
 // Format date to human-readable

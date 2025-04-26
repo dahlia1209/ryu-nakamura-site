@@ -1,5 +1,6 @@
-export class ContentItem {
+export class Content {
   constructor(
+    public id:string,
     public titleNo: number,
     public title: string, 
     public contentText: string,
@@ -13,7 +14,40 @@ export class ContentItem {
     public noteUrl?: string,
   ) {
   }
+
+  static fromIContentResponse(response:IContentResponse){
+    return new Content(
+      response.id,
+      response.title_no,
+      response.title,
+      response.content_text,
+      response.content_html,
+      response.image_url,
+      response.price,
+      response.category,
+      response.tags,
+      new Date(response.publish_date) ,
+      response.preview_text_length,
+      response.note_url,
+    )
+  }
 }
+
+export interface IContentResponse {
+    id:string
+    title_no: number
+    title: string
+    content_text: string
+    content_html: string
+    image_url: string
+    price: number
+    category: string
+    tags: string[]
+    publish_date: string;
+    preview_text_length: number
+    note_url?: string
+}
+
 
 export class ContentPurchase {
   constructor(

@@ -1,4 +1,4 @@
-import { ContentItem } from '@/models/content';
+import { Content } from '@/models/content';
 
 export function useContentService(apiBaseUrl: string = import.meta.env.VITE_API_ENDPOINT) {
     const url = new URL(`${apiBaseUrl}/contents`);

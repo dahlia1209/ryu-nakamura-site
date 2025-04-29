@@ -1,7 +1,7 @@
 import { type EmailMessage } from '@/models/contact';
 
 export function useContactService(apiBaseUrl: string = import.meta.env.VITE_API_ENDPOINT) {
-    const endpoint = `${apiBaseUrl}/send-email`;
+    const endpoint = `${apiBaseUrl}/email`;
 
     async function sendmail(emailMessage: EmailMessage) {
         const response = await fetch(endpoint, {

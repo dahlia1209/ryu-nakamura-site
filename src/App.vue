@@ -17,10 +17,10 @@ const updateIsMobile=()=>{
   siteStore.isMobile=window.innerWidth < 768
 }
 
-onMounted(()=>{
+onMounted(async ()=>{
   updateIsMobile();
   window.addEventListener('resize',updateIsMobile);
-  authStore.checkAuthStatus();
+  await authStore.checkAuthStatus();
   if (authStore.userInfo) userStore.updateUserFromAccountInfo(authStore.userInfo)
 })
 

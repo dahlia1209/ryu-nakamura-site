@@ -56,43 +56,6 @@ const localStore=(()=>{
   });
 
   /*action*/
-  // Handle checkout process
-  // async function handleCheckout() {
-  //   if (!content.value) return;
-    
-  //   try {
-  //     isSubmitting.value = true;
-  //     error.value = null;
-      
-  //     // Build success and cancel URLs (use absolute URLs with origin)
-  //     const origin = window.location.origin;
-  //     const successUrl = `${origin}/${route.fullPath}?session_id={CHECKOUT_SESSION_ID}`;
-  //     const cancelUrl = `${origin}/${route.fullPath}?checkout_cancelled=true`;
-      
-  //     // Call content store to create checkout session
-  //     const contentItem = contentStore.getContentByTitleNo(content.value.titleNo)
-  //     const result = await contentStore.checkoutService.createContentCheckout(
-  //       contentItem!,
-  //       successUrl,
-  //       cancelUrl
-  //     );
-      
-  //     // If successful, redirect to Stripe checkout
-  //     if (result && result.url) {
-  //       checkoutUrl.value = result.url;
-  //       window.location.href = result.url;
-  //     } else {
-  //       error.value = '決済ページの作成に失敗しました。もう一度お試しください。';
-  //     }
-  //   } catch (err) {
-  //     error.value = err instanceof Error ? err.message : '決済処理中にエラーが発生しました。';
-  //     console.error('Checkout error:', err);
-  //   } finally {
-  //     isSubmitting.value = false;
-  //   }
-  // };
-
-  
 
   async function fetchOrders() {
     try {
@@ -100,7 +63,7 @@ const localStore=(()=>{
       // APIからコンテンツの詳細を取得
       if (!userStore.user ) throw new Error("ログインされていません。")
       if (!content.value ) throw new Error("コンテンツが取得できません")
-      const orders = await orderStore.service.getPurchasedOrders(userStore.user.id,content.value.id);
+      const orders = await orderStore.service.getPurchasedOrders(authStore.getAccessToken,userStore.user.id,content.value.id);
 
       if (orders.length == 1) {
         contentStore.updateContentHtml(contentTitleNo.value, orders[0].content.contentHtml);
@@ -123,12 +86,12 @@ const localStore=(()=>{
 
   async function purchaseOrder() {
     try {
-      if (!userStore.user ) throw new Error("ログインされていません。")
+      if (!userStore.user ) throw new Error("ログイン（アカウント登録）してからご購入ください。")
       if (!content.value ) throw new Error("コンテンツが取得できません")
       const orderItem=getOrderItem(userStore.user.id,content.value.id)
       const successUrl=`${window.location.origin}${route.path}`
       const cancelUrl=`${window.location.origin}${route.path}`
-      const checkoutUrl = await orderStore.service.purchaseOrder(orderItem,successUrl,cancelUrl);
+      const checkoutUrl = await orderStore.service.purchaseOrder(authStore.getAccessToken,orderItem,successUrl,cancelUrl);
       window.location.href = checkoutUrl
 
     } catch (err) {
@@ -173,6 +136,7 @@ return {
 
 // Redirect if content not found
 onMounted(async () => {
+  
   if (!localStore.getters.content.value) {
     router.push('/contents');
     return;
@@ -183,6 +147,7 @@ onMounted(async () => {
     localStore.state.error.value = 'お支払いがキャンセルされました。再度お試しください。';
   }
 
+  
   if (!authStore.isAuthenticated) localStore.state.isLoading.value=false
   else await localStore.actions.fetchOrders()
   
@@ -228,6 +193,16 @@ watch(() => route.query, (newQuery) => {
         ].every(x=>x==true)" class="subscribed-badge">購入済み</span>
       </div>
     </div>
+
+    <div class="note-warning" v-if="localStore.getters.content.value && localStore.getters.content.value.noteUrl">
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-content">
+          <p class="warning-title">【重要】決済システムはテスト実装です</p>
+          <p>現在、本サイトのクレジットカード決済システムはテスト実装中のため、購入手続きを行わないでください。</p>
+          <p>このコンテンツをご覧になりたい場合は、以下のnoteリンクからご購入ください：</p>
+          <a :href="localStore.getters.content.value.noteUrl" target="_blank" class="note-link">noteで読む</a>
+        </div>
+      </div>
 
     <LoadingSpinner v-if="localStore.state.isLoading.value" />
 
@@ -284,10 +259,6 @@ watch(() => route.query, (newQuery) => {
     </section>
   </div>
 
-  <!-- <div v-else class="error-container">
-    <p>コンテンツが見つかりませんでした</p>
-    <RouterLink to="/contents" class="back-button">コンテンツ一覧に戻る</RouterLink>
-  </div> -->
 </template>
 
 <style scoped>
@@ -678,6 +649,82 @@ input {
   .price-card {
     position: static;
     margin-bottom: 30px;
+  }
+}
+
+
+/* 注意喚起CSS */
+@media (max-width: 768px) {
+  .content-body {
+    grid-template-columns: 1fr;
+  }
+  
+  .featured-image {
+    height: 250px;
+  }
+  
+  .price-card {
+    position: static;
+    margin-bottom: 30px;
+  }
+}
+
+.note-warning {
+  display: flex;
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-left: 5px solid #e0a800;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px 0;
+  align-items: flex-start;
+}
+
+.warning-icon {
+  font-size: 24px;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.warning-content {
+  flex: 1;
+}
+
+.warning-title {
+  font-weight: 600;
+  color: #856404;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.warning-content p {
+  margin-bottom: 8px;
+  color: #5c4a03;
+}
+
+.note-link {
+  display: inline-block;
+  background-color: #06C755;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  text-decoration: none;
+  margin-top: 8px;
+  transition: background-color 0.3s;
+}
+
+.note-link:hover {
+  background-color: #05a649;
+}
+
+@media (max-width: 480px) {
+  .note-warning {
+    flex-direction: column;
+  }
+  
+  .warning-icon {
+    margin-bottom: 10px;
   }
 }
 </style>

@@ -10,6 +10,7 @@ const currentYear = new Date().getFullYear()
     <div class="footer-content">
       <div class="footer-links">
         <RouterLink to="/privacy-policy">プライバシーポリシー</RouterLink>
+        <RouterLink to="/transaction-law">特定商取引法に基づく表記</RouterLink>
         <RouterLink to="/contact">お問い合わせ</RouterLink>
       </div>
       <div class="copyright">
@@ -62,6 +63,12 @@ footer {
 @media (max-width: 767px) {
   .footer-content {
     padding: 0 15px;
+  }
+  
+  .footer-links {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
   }
 }
 </style>

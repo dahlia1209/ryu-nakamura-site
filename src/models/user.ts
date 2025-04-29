@@ -38,6 +38,19 @@ export class User {
       last_login
     )
   }
+
+  toUserRequest(){
+    const created_at=this.createdAt==null?this.createdAt:this.createdAt.toISOString()
+    const last_login=this.lastLogin==null?this.lastLogin:this.lastLogin.toISOString() 
+
+    return {
+      id:this.id,
+      provider:this.provider,
+      email:this.email,
+      created_at:created_at,
+      last_login:last_login
+    } as IUserResponse
+  }
 }
 
 export interface IUserResponse{

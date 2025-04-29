@@ -4,7 +4,7 @@ import {Headline} from '@/models/page'
 import HeaderHeadlineItem from './HeaderHeadlineItem.vue'
 import { useSiteStore } from '@/stores/site'
 import { useAuthStore } from '@/stores/auth'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user';
 import { User } from '@/models/user';
 import { useRoute, useRouter } from 'vue-router';
@@ -32,13 +32,12 @@ const handleLoginClick = async () => {
   if (authStore.isLoggedIn &&authStore.userInfo) {
     // ログアウト処理
     await authStore.authService.logout(authStore.userInfo)
-    authStore.checkAuthStatus()
   } else {
     // ログイン処理
     isLoading.value = true
     try {
       const response=await authStore.authService.login()
-      authStore.checkAuthStatus()
+      authStore.updateAuthStatus(response)
       const user=getUser()
       await upsertUser(user)
       router.go(0)
@@ -58,15 +57,8 @@ function getUser(){
 }
 
 async function upsertUser(user:User) {
-
     try {
-      // APIからコンテンツの詳細を取得
-      const response = await userStore.service.upsertUser(user);
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
-      }
-      const userData = await response.json();
-
+      const response = await userStore.service.upsertUser(authStore.getAccessToken,user);
     } catch (err) {
       console.error('Error fetching content:', err);
       error.value = err instanceof Error ? err.message : 'コンテンツの取得中にエラーが発生しました。';
@@ -91,6 +83,10 @@ async function upsertUser(user:User) {
     }
   }
 })()
+
+// onMounted(async ()=>{
+//   await authStore.checkAuthStatus();
+// })
 </script>
 
 <template>

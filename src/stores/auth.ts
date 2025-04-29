@@ -1,8 +1,7 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 import { useAuthService } from '@/services/authService';
-import type { AccountInfo } from '@azure/msal-browser';
-
+import type { AccountInfo,AuthenticationResult } from '@azure/msal-browser';
 
 
 export const useAuthStore = defineStore('auth', {
@@ -15,15 +14,31 @@ export const useAuthStore = defineStore('auth', {
   
   getters: {
     isLoggedIn: (state) => state.isAuthenticated,
+    getAccessToken:(state)=>{
+      if (!state.accessToken) throw new Error("アクセストークンが取得できません")
+      return state.accessToken
+    }
   },
   
   actions: {
+    
+
+    updateAuthStatus(auth:AuthenticationResult){
+      this.accessToken=auth.accessToken
+      this.userInfo=auth.account
+      this.isAuthenticated=true
+    },
     async checkAuthStatus() {
-      const account = this.authService.getAccount();
-      this.isAuthenticated = !!account;
-      this.userInfo = account;
-      this.authService.getToken().then((token)=>this.accessToken=token)
+      try {
+        const auth=await this.authService.acquireTokenSilent()
+        this.updateAuthStatus(auth)
+      } catch (error) {
+        //未ログイン
+      }
+
     },
     
   }
+
+  
 });

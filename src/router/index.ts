@@ -46,12 +46,19 @@ const router = createRouter({
       component: () => import('../views/PrivacyPolicyView.vue'),
     },
     {
-      path: '/contact',
-      name: 'contact',
-      component: () => import('../views/ContactView.vue'),
+      path: '/transaction-law',
+      name: 'transaction-law',
+      component: () => import('../views/TransactionLawView.vue'),
+
+    },
+    { 
+      path: '/:pathMatch(.*)*', 
+      name: 'NotFound', 
+      component: () => import('../views/NotFoundView.vue'), 
     },
   ],
 
 })
+
 
 export default router

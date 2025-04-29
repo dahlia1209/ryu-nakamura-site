@@ -3,7 +3,7 @@ import  { type OrderStatus,Order,type IOrderResponse,type IOrderItemRequest,Orde
 export function useOrderService(apiBaseUrl: string = import.meta.env.VITE_API_ENDPOINT) {
   const orderEndpoint = new URL(`${apiBaseUrl}/orders`)
 
-  async function getPurchasedOrders(userId:string,contentId:string,status:OrderStatus="complete") {
+  async function getPurchasedOrders(accessToekn:string,userId:string,contentId:string,status:OrderStatus="complete") {
     const endpoint=new URL(orderEndpoint)
     endpoint.searchParams.append("user_id",userId)
     endpoint.searchParams.append("content_id",contentId)
@@ -12,6 +12,7 @@ export function useOrderService(apiBaseUrl: string = import.meta.env.VITE_API_EN
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization':`Bearer ${accessToekn}`,
       },
     })
 
@@ -24,9 +25,8 @@ export function useOrderService(apiBaseUrl: string = import.meta.env.VITE_API_EN
     return data.map(x=>Order.fromOrderResponse(x))
   }
 
-  async function purchaseOrder(orderItem: OrderItem, successUrl: string, cancelUrl: string) {
+  async function purchaseOrder(accessToekn:string,orderItem: OrderItem, successUrl: string, cancelUrl: string) {
     const endpoint=new URL(orderEndpoint.toString()+"/checkout")
-    console.log("endpoint",endpoint)
 
     endpoint.searchParams.append("success_url",successUrl)
     endpoint.searchParams.append("cancel_url",cancelUrl)
@@ -34,6 +34,7 @@ export function useOrderService(apiBaseUrl: string = import.meta.env.VITE_API_EN
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization':`Bearer ${accessToekn}`,
       },
       body: JSON.stringify(orderItem.toOrderItemRequest()),
     })

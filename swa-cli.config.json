@@ -3,10 +3,10 @@
   "configurations": {
     "ryu-nakamura-site": {
       "appLocation": ".",
-      "outputLocation": "dist",
-      "appBuildCommand": "npm run build",
-      "run": "npm run dev",
-      "appDevserverUrl": "http://localhost:5173"
+      "outputLocation": "docs\\.vitepress\\dist",
+      "appBuildCommand": "npm run docs:build",
+      "run": "npm run docs:dev",
+      "appDevserverUrl": "http://localhost:3000"
     }
   }
 }

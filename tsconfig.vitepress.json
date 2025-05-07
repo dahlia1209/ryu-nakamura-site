@@ -1,0 +1,9 @@
+{
+  "include": ["docs/**/*.ts", "docs/**/*.vue", "docs/**/*.md", "docs/.vitepress/contents.data.ts"],
+  "exclude": ["README.md"],
+  "compilerOptions": {
+  },
+  "vueCompilerOptions": {
+    "vitePressExtensions": [".md"]
+  }
+}

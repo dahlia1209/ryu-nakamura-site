@@ -76,6 +76,7 @@ az group create --name $rg --location $location --tags "yyyyMMddHHmm=$yyyyMMddHH
 az staticwebapp create -n $swa -g $rg --query "defaultHostname"
 
 #コードデプロイ
+swa build
 $rg="nakamura-rg"
 if ([System.String]::IsNullOrEmpty($rg)){
     $yyyyMMddHHmm=$(Get-Date -Format "yyyyMMddHHmm")
@@ -83,7 +84,6 @@ if ([System.String]::IsNullOrEmpty($rg)){
     }
 $swa="ryu-nakamura-swa"
 $token=az staticwebapp secrets list --name $swa --query "properties.apiKey" -o tsv
-swa build
 #swa deploy -d $token #プレビュー
 swa deploy -d $token --env production #商用
 

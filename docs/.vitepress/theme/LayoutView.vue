@@ -3,20 +3,23 @@ import HeaderItem from '../../src/components/HeaderItem.vue'
 import FooterItem from '../../src/components/FooterItem.vue'
 import NotFoundView from './NotFoundView.vue'
 import { useData,Content,useRoute } from 'vitepress'
-import { onBeforeMount, onMounted } from 'vue'
+import { onBeforeMount, onMounted, watchEffect } from 'vue'
 
 
 import { useAuthStore } from '../../src/stores/auth'
 import { useUserStore } from '../../src/stores/user'
+import { useSiteStore } from '../../src/stores/site'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
+const siteStore = useSiteStore()
 const { page } = useData()
 
 onMounted(async ()=>{
   await authStore.authService.initialize()
   await authStore.checkAuthStatus();
   if (authStore.userInfo) userStore.updateUserFromAccountInfo(authStore.userInfo)
+  
 })
 
 </script>
@@ -25,13 +28,14 @@ onMounted(async ()=>{
   <header>
     <HeaderItem />
   </header>
-  <main >
+  <main @click="siteStore.closeMenu()">
     <NotFoundView v-if="page.isNotFound" />
     <Content v-else />
   </main>
   <footer>
     <FooterItem />
   </footer>
+  <div v-if="siteStore.isAccountMenuOpen" class="outside-menu" @click="siteStore.closeMenu()"></div>
 </template>
 
 <style >
@@ -39,7 +43,6 @@ main,
 header {
   max-width: 1080px;
   margin: 0 auto;
-  /* padding: 0 20px; */
   display: flex;
   width: 100%;
 }
@@ -51,6 +54,7 @@ main {
   flex-direction: column;
   padding-top: 70px;
   z-index: 10;
+  
 }
 
 main.open {
@@ -85,5 +89,12 @@ header::after {
   width: 100%;
 }
 
-
+.outside-menu{
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 15;
+}
 </style>

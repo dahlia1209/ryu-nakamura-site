@@ -11,32 +11,20 @@ const contentStore = useContentStore();
 
 <template>
   <div class="works-container">
-    <HomeHeadline :headline="new Headline('my-works', '制作アプリ一覧')" />
-    
-    <div class="works-description">
-      これまでに個人で開発してきたアプリを紹介します。
-
-    </div>
-    
-    <div class="works-grid">
-      <WorkItem 
-        v-for="item in contentStore.workItems" 
-        :key="item.id"
-        :project="item"
-      />
-    </div>
     <HomeHeadline :headline="new Headline('contents', 'コンテンツ一覧')" />
-    
-    
     <div class="intro-text">
       <p>現在公開中の記事コンテンツを紹介します。</p>
     </div>
-        <div class="content-grid">
-      <ContentItem 
-        v-for="content in contentStore.contentItems" 
-        :key="content.titleNo" 
-        :content="content" 
-      />
+    <div class="content-grid">
+      <ContentItem v-for="content in contentStore.contentItems" :key="content.titleNo" :content="content" />
+    </div>
+
+    <HomeHeadline :headline="new Headline('my-works', '制作アプリ一覧')" />
+    <div class="works-description">
+      これまでに個人で開発してきたアプリを紹介します。
+    </div>
+    <div class="works-grid">
+      <WorkItem v-for="item in contentStore.workItems" :key="item.id" :project="item" />
     </div>
   </div>
 
@@ -47,12 +35,10 @@ const contentStore = useContentStore();
   display: flex;
   flex-direction: column;
   padding: 0 30px;
-  
+
 }
 
 .works-description {
-  margin: 20px 0 30px;
-  line-height: 1.6;
 }
 
 .works-grid {
@@ -101,14 +87,13 @@ const contentStore = useContentStore();
 }
 
 .intro-text {
-  margin: 20px 0 30px;
-  line-height: 1.6;
 }
 
 .content-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 25px;
+  margin-bottom: 50px;
 }
 
 

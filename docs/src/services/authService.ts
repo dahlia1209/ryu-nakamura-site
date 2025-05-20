@@ -51,7 +51,7 @@ export function useAuthService() {
 
   async function login() {
     try {
-      const response = await msalInstance.loginPopup(loginRequest)
+      const response = await msalInstance.loginRedirect(loginRequest)
       return response
     } catch (error) {
       console.error('Login error:', error)

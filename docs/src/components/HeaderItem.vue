@@ -3,6 +3,7 @@ import { Headline } from '../models/page'
 import { useAuthStore } from '../stores/auth'
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '../stores/user';
+import { useSiteStore } from '../stores/site';
 import { User } from '../models/user';
 // import { useRoute, useRouter } from 'vue-router';
 import { useRouter } from 'vitepress'
@@ -11,37 +12,29 @@ const router = useRouter()
 // const siteStore = useSiteStore()
 const authStore = useAuthStore()
 const userStore = useUserStore()
+const siteStore = useSiteStore()
 
 const localStore = (() => {
   /*state*/
   const isLoading = ref(false)
   const error = ref<string | null>(null);
-  const isMenuOpen = ref(false)
-
 
   /*getter*/
   const color = computed(() => authStore.isLoggedIn ? '#e74c3c' : '#06C755')
+  const getAccountName=computed(()=> {
+    if (!userStore.user) return "NoName"
+    else return userStore.user.email.slice(0,2)
+  })
 
   /*action*/
-  const toggleMenu = () => {
-    isMenuOpen.value = !isMenuOpen.value
-  };
-
-  const closeMenu = () => isMenuOpen.value = false
-
   const handleLoginClick = async () => {
     if (authStore.isLoggedIn && authStore.userInfo) {
-      // ログアウト処理
-      await authStore.authService.logout(authStore.userInfo)
+      return
     } else {
       // ログイン処理
       isLoading.value = true
       try {
         const response = await authStore.authService.login()
-        authStore.updateAuthStatus(response)
-        const user = getUser()
-        await upsertUser(user)
-        // router.go()
       } catch (error) {
         console.error('Login failed:', error)
       } finally {
@@ -50,11 +43,11 @@ const localStore = (() => {
     }
   }
 
-  function getUser() {
-    if (!authStore.userInfo) throw new Error(`ユーザ情報が取得できません。`);
-    const user = User.fromAccountInfo(authStore.userInfo)
-    user.lastLogin = new Date()
-    return user
+  const handleAccountClick = async () => {
+    if (authStore.isLoggedIn && authStore.userInfo) {
+      // ログアウト処理
+      await authStore.authService.logout(authStore.userInfo)
+    } 
   }
 
   async function upsertUser(user: User) {
@@ -73,41 +66,38 @@ const localStore = (() => {
   return {
     state: {
       isLoading,
-      isMenuOpen,
-      closeMenu
     },
     getters: {
-      color
+      color,
+      getAccountName
     },
     actions: {
-      toggleMenu,
       handleLoginClick,
+      handleAccountClick,
       upsertUser,
-      closeMenu
     }
   }
 })()
 
 onMounted(async ()=>{
-
 })
 
 </script>
 
 <template>
   <div class="wrapper">
-    <a class="logo" @click="localStore.actions.closeMenu(); router.go('/')">
+    <a class="logo" @click="siteStore.closeMenu(); router.go('/')">
       Ryu Nakamura
     </a>
 
     <nav class="navbar">
-      <ul class="nav-links" :class="{ 'nav-active': localStore.state.isMenuOpen.value }">
-        <li @click="localStore.actions.closeMenu(); router.go('/contents')">コンテンツ</li>
-        <li @click="localStore.actions.closeMenu(); router.go('/service')">サービス</li>
-        <li @click="localStore.actions.closeMenu(); router.go('/contact')">お問い合わせ</li>
+      <ul class="nav-links" :class="{ 'nav-active': siteStore.isMenuOpen }">
+        <li @click="siteStore.closeMenu(); router.go('/contents')">コンテンツ</li>
+        <li @click="siteStore.closeMenu(); router.go('/about')">プロフィール</li>
+        <li @click="siteStore.closeMenu(); router.go('/contact')">お問い合わせ</li>
       </ul>
-      <div class="burger" @click="localStore.actions.toggleMenu()"
-        :class="{ 'toggle': localStore.state.isMenuOpen.value }">
+      <div class="burger" @click="siteStore.toggleMenu()"
+        :class="{ 'toggle': siteStore.isMenuOpen }">
         <div class="line1"></div>
         <div class="line2"></div>
         <div class="line3"></div>
@@ -116,17 +106,26 @@ onMounted(async ()=>{
 
     <div class="header-right">
   
-      <button v-if="authStore.isLoggedIn" class="login-button" @click="localStore.actions.handleLoginClick()"
-        :disabled="localStore.state.isLoading.value">
-        <img src="/src/assets/user_icon.svg" class="user_icon" alt="user_icon">
+      <div v-if="authStore.isLoggedIn" class="account-container"  @click.stop="siteStore.toggleAccountMenu()">
+        <button  class="account-icon" 
+          :disabled="localStore.state.isLoading.value" >
+          {{ localStore.getters.getAccountName.value.toUpperCase() }}
       </button>
-      <button v-else @click="localStore.actions.handleLoginClick()" class="login-button"
-        :disabled="localStore.state.isLoading.value">
-        ログイン
-      </button>
-      <!-- <button v-if="siteStore.isMobile" class="menu-button" @click="localStore.actions.toggleNav()" aria-label="メニューを開く">
-        <span v-for="i in [1, 2, 3]" :key="i" :class="['bar', { 'open': siteStore.isMenuOpen }]"></span>
-      </button> -->
+        <div class="dropdown-menu" v-if="siteStore.isAccountMenuOpen" >
+            <div class="menu-item" ><span class="icon"></span>購入記事</div>
+            <div class="menu-item"><span class="icon"></span>プロフィール編集</div>
+            <div class="menu-item" @click.stop="localStore.actions.handleAccountClick()"><span class="icon"></span>ログアウト</div>
+        </div>
+        <div class="outside-menu">
+
+        </div>
+      </div>
+      <div v-else class="login-container">
+        <button  @click="localStore.actions.handleLoginClick()" class="login-button"
+          :disabled="localStore.state.isLoading.value">
+          ログイン
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -267,20 +266,9 @@ onMounted(async ()=>{
 
   .nav-active {
     opacity: 1;
-    z-index: 20;
     visibility: visible;
   }
 
-  /* @keyframes navLinkFade {
-    from {
-      opacity: 0;
-      transform: translateX(50px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  } */
 }
 
 .toggle .line1 {
@@ -294,4 +282,58 @@ onMounted(async ()=>{
 .toggle .line3 {
   transform: rotate(45deg) translate(-5px, -6px);
 }
+
+
+.account-container {
+  display: flex;
+            position: relative;
+            align-items: center; 
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+.account-icon{
+  width: 40px;
+  height: 40px;
+  border-color: transparent;
+  border-radius: 50%;
+  background-color: var(--vp-c-green-3);
+  color: var(--vp-c-white);
+  font-weight: bold;
+  font-size: 18px;
+  text-align: center;
+}
+
+
+.account-container:hover {
+  opacity: 0.8;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 130%;
+  right: 0;
+  background-color: var(--vp-c-bg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  width: 200px;
+}
+
+.menu-item {
+  display: flex;
+  padding: 10px;
+  align-items: center;
+  color: var(--vp-c-green-1);
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background-color: var(--vp-c-gray-3);
+}
+
+</style>
+
+<style module>
+
 </style>

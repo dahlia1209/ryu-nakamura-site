@@ -50,11 +50,8 @@ export default defineConfig({
     server:{
       headers:{
         "x-test":"true",
-        "content-type":"application/json"
       },
       
     }
   }
-  
-  
 })

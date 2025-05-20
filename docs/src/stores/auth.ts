@@ -32,7 +32,6 @@ export const useAuthStore = defineStore('auth', {
       try {
         const auth=await this.authService.acquireTokenSilent()
         this.updateAuthStatus(auth)
-        if (import.meta.env.DEV) console.log("auth",auth)
       } catch (error) {
         //未ログイン
       }

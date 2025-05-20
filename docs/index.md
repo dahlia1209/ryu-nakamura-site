@@ -1,6 +1,5 @@
 ---
 title: 中村 龍
-
 ---
 
 <script setup lang="ts">

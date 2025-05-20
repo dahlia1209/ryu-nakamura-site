@@ -1,5 +1,5 @@
 ---
-title: test
+title: contents
 ---
 
 <script setup lang="ts">

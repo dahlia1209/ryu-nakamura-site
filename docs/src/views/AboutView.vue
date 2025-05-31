@@ -3,12 +3,10 @@ import ContentsList from '../components/HomeContents.vue'
 import HomeHeadline from '../components/HomeHeadline.vue'
 import HomeTable from '../components/HomeTable.vue'
 import {Headline} from '../models/page'
-import { useContentStore } from '../stores/content';
 import WorkItem from '../components/WorkItem.vue'
 import ContentItem from '../components/ContentItem.vue';
 import {ref} from 'vue'
 
-const contentStore = useContentStore();
 
 const utility=(()=>{
   const headlines=ref<Headline[]>([])

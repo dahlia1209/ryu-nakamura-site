@@ -15,14 +15,14 @@ export class User {
   ) {}
 
   static fromAccountInfo(accountInfo:AccountInfo) {
-    if (!accountInfo.idTokenClaims || !accountInfo.idTokenClaims.sub || !accountInfo.idTokenClaims.idp || !accountInfo.idTokenClaims.emails) {
+    if (!accountInfo.idTokenClaims || !accountInfo.idTokenClaims.oid || !accountInfo.idTokenClaims.idp || !accountInfo.idTokenClaims.email) {
       throw  new Error(`アカウント情報に不足情報があります.`)
     }
 
       return new User(
-        accountInfo.idTokenClaims.sub,
+        accountInfo.idTokenClaims.oid,
         accountInfo.idTokenClaims.idp,
-        accountInfo.idTokenClaims.emails[0],
+        accountInfo.idTokenClaims.email as string,
       )
   }
 

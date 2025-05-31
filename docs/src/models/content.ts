@@ -79,3 +79,38 @@ export class WorkItem {
       public githubUrl?: string,
   ){}
 }
+
+export class PreviewContent {
+  constructor(
+    public id:string,
+    public title_no: number,
+    public title: string, 
+    public preview_text: string,
+    public preview_html: string,
+    public image_url: string,
+    public price: number,
+    public category: string,
+    public tags: string[],
+    public publish_date: string,
+    public remaining_text_length: number =100,
+    public note_url?: string,
+  ) {
+  }
+
+  toContent(){
+    return new Content(
+      this.id,
+      this.title_no,
+      this.title,
+      this.preview_text,
+      this.preview_html,
+      this.image_url,
+      this.price,
+      this.category,
+      this.tags,
+      new Date(this.publish_date),
+      0,
+      this.note_url,
+    )
+  }
+}

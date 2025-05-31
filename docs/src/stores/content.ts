@@ -2,12 +2,13 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { Content,WorkItem } from '../models/content'
 import { useContentService } from '../services/contentService'
+import { data} from '../data/contents.data'
 
 export const useContentStore = defineStore('content', {
     state: () => ({
       contentService:useContentService(),
       workItems:[] as WorkItem[],
-      contentItems:[] as Content[]
+      contentItems:[] as Content[],
     }),
     getters: {
       getContentByTitleNo:(state)=>{
@@ -33,5 +34,8 @@ export const useContentStore = defineStore('content', {
       updateWorkItems(workItems:WorkItem[]) {
         this.workItems=workItems
       },
+      setContentsFromPreview(){
+        this.contentItems=data.contents.map(x=>x.toContent())
+      }
     },
 })

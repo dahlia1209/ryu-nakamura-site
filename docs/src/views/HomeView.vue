@@ -8,6 +8,7 @@ import WorkItem from '../components/WorkItem.vue'
 import ContentItem from '../components/ContentItem.vue';
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vitepress'
+import { data } from '../data/contents.data'
 
 const contentStore = useContentStore();
 const route = useRoute()
@@ -52,7 +53,7 @@ const utility = (() => {
       <h3>■デジタルコンテンツ</h3>
       <p>現在公開中のコンテンツ一覧です。</p>
       <div class="content-grid">
-        <ContentItem v-for="content in contentStore.contentItems" :key="content.titleNo" :content="content" />
+        <ContentItem v-for="content in data.contents" :key="content.title_no" :content="content" />
       </div>
 
       <h3>■アプリケーション</h3>

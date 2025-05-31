@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { Content } from '../models/content';
+import { Content,PreviewContent } from '../models/content';
 import { withBase, useData,useRouter } from 'vitepress'
 
 const { theme } = useData()
 const router=useRouter()
 
 const props = defineProps<{
-  content: Content
+  content: PreviewContent
 }>();
 
 // Format date to human-readable
@@ -32,7 +32,7 @@ function formatPrice(price: number): string {
   <div class="content-card">
     <div class="image-container">
       <img 
-        :src="content.imageUrl" 
+        :src="content.image_url" 
         :alt="content.title"
       >
     </div>
@@ -40,7 +40,7 @@ function formatPrice(price: number): string {
     <div class="content-info">
       <h3>{{ content.title }}</h3>
       
-      <div class="description">{{ content.contentText }}</div>
+      <div class="description">{{ content.preview_text }}</div>
       
       <div class="meta-info">
         <div class="tags">
@@ -48,7 +48,7 @@ function formatPrice(price: number): string {
             {{ tag }}
           </span>
         </div>
-        <div class="publish-date">{{ formatDate(content.publishDate) }}</div>
+        <div class="publish-date">{{ formatDate(new Date(content.publish_date)) }}</div>
       </div>
       
       <div class="price-section">
@@ -56,10 +56,10 @@ function formatPrice(price: number): string {
       </div>
       
       <div class="action-buttons">
-        <a :href="(`/contents/${content.titleNo}`)" class="details-button">
+        <a :href="(`/contents/${content.title_no}`)" class="details-button">
           詳細を見る
         </a>
-        <a v-if="content.noteUrl" :href="content.noteUrl" target="_blank" class="note-link">
+        <a v-if="content.note_url" :href="content.note_url" target="_blank" class="note-link">
           <img src="../assets/logo/note_logo.svg" alt="note_logo" class="note-icon">
         </a>
       </div>

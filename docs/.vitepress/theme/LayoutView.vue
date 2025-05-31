@@ -3,12 +3,13 @@ import HeaderItem from '../../src/components/HeaderItem.vue'
 import FooterItem from '../../src/components/FooterItem.vue'
 import NotFoundView from './NotFoundView.vue'
 import { useData,Content,useRoute } from 'vitepress'
-import { onBeforeMount, onMounted, watchEffect } from 'vue'
+import { onBeforeMount, onMounted, watchEffect,ref } from 'vue'
 
 
 import { useAuthStore } from '../../src/stores/auth'
 import { useUserStore } from '../../src/stores/user'
 import { useSiteStore } from '../../src/stores/site'
+import { useContentStore } from '../../src/stores/content'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
@@ -16,23 +17,28 @@ const siteStore = useSiteStore()
 const { page } = useData()
 
 onMounted(async ()=>{
-  await authStore.authService.initialize()
-  await authStore.checkAuthStatus();
-  if (authStore.userInfo) userStore.updateUserFromAccountInfo(authStore.userInfo)
-  
+  try {
+    await authStore.authService.initialize()
+    await authStore.checkAuthStatus();
+    if (authStore.userInfo) userStore.updateUserFromAccountInfo(authStore.userInfo)
+  } catch (error) {
+    console.error("initialize error:",error)
+  }finally{
+    siteStore.isLoading=false
+  }
 })
 
 </script>
 
-<template>
-  <header>
+<template >
+  <header >
     <HeaderItem />
   </header>
-  <main @click="siteStore.closeMenu()">
+  <main  @click="siteStore.closeMenu()">
     <NotFoundView v-if="page.isNotFound" />
     <Content v-else />
   </main>
-  <footer>
+  <footer >
     <FooterItem />
   </footer>
   <div v-if="siteStore.isAccountMenuOpen" class="outside-menu" @click="siteStore.closeMenu()"></div>

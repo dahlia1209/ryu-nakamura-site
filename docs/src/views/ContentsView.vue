@@ -4,6 +4,7 @@ import WorkItem from '../components/WorkItem.vue'
 import { Headline } from '../models/page'
 import { useContentStore } from '../stores/content';
 import ContentItem from '../components/ContentItem.vue';
+import { data } from '../data/contents.data'
 
 const contentStore = useContentStore();
 
@@ -16,7 +17,7 @@ const contentStore = useContentStore();
       <p>現在公開中の記事コンテンツを紹介します。</p>
     </div>
     <div class="content-grid">
-      <ContentItem v-for="content in contentStore.contentItems" :key="content.titleNo" :content="content" />
+      <ContentItem v-for="content in data.contents" :key="content.title_no" :content="content" />
     </div>
 
     <HomeHeadline :headline="new Headline('my-works', '制作アプリ一覧')" />

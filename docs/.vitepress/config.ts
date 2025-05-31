@@ -1,57 +1,25 @@
 import { defineConfig,PageData } from 'vitepress'
-import {contentsData} from '../src/data/contents.ts'
+import {load} from '../src/data/contents.data'
 
 export default defineConfig({
   title: "Ryu Nakamura",
   description: "Ryu's web site",
   head: [['link', { rel: 'icon', href: '/home.svg' }]],
-  themeConfig: {
-    nav: [
-      { text: 'Home', link: '/' },
-      { text: 'Examples', link: '/markdown-examples' }
-    ],
-
-    sidebar: [
-      {
-        text: 'Examples',
-        items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
-        ]
-      }
-    ],
-
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
-    ]
-  },
-  transformPageData(pageData, { siteConfig }) {
+  
+  async transformPageData(pageData, { siteConfig }) {
     //サブ関数
-    const updateContentsTitle=(pageData:PageData)=>{
+    const updateContentsTitle=async (pageData:PageData)=>{
       if (pageData.relativePath.startsWith('contents/')) {
         const filename = pageData.relativePath.split('/')[1]; 
         const titleNo = filename.split('.')[0]; 
-        pageData.title = contentsData.filter(x=>x.titleNo.toString()==titleNo)[0].title;
-      }
-    }
-
-    const updateParams=(pageData:PageData)=>{
-      pageData.params={
-        contentsData
+        const data=await load()
+        pageData.title = data.contents.filter(x=>x.title_no.toString()==titleNo)[0].title;
       }
     }
 
     //メイン処理
-    updateContentsTitle(pageData)
-    updateParams(pageData)
+    await updateContentsTitle(pageData)
     return pageData
   },
-  vite:{
-    server:{
-      headers:{
-        "x-test":"true",
-      },
-      
-    }
-  }
+  
 })

@@ -5,10 +5,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '../stores/user';
 import { useSiteStore } from '../stores/site';
 import { User } from '../models/user';
-// import { useRoute, useRouter } from 'vue-router';
-import { useRouter } from 'vitepress'
+import { useRouter,useRoute } from 'vitepress'
 
 const router = useRouter()
+const route = useRoute()
 // const siteStore = useSiteStore()
 const authStore = useAuthStore()
 const userStore = useUserStore()
@@ -34,7 +34,7 @@ const localStore = (() => {
       // ログイン処理
       isLoading.value = true
       try {
-        const response = await authStore.authService.login()
+        const response = await authStore.authService.login(route.path)
       } catch (error) {
         console.error('Login failed:', error)
       } finally {
@@ -105,19 +105,18 @@ onMounted(async ()=>{
     </nav>
 
     <div class="header-right">
-  
-      <div v-if="authStore.isLoggedIn" class="account-container"  @click.stop="siteStore.toggleAccountMenu()">
+      <div v-if="siteStore.isLoading">
+
+      </div>
+      <div v-else-if="authStore.isLoggedIn" class="account-container"  @click.stop="siteStore.toggleAccountMenu()">
         <button  class="account-icon" 
           :disabled="localStore.state.isLoading.value" >
           {{ localStore.getters.getAccountName.value.toUpperCase() }}
       </button>
         <div class="dropdown-menu" v-if="siteStore.isAccountMenuOpen" >
-            <div class="menu-item" ><span class="icon"></span>購入記事</div>
-            <div class="menu-item"><span class="icon"></span>プロフィール編集</div>
+            <div class="menu-item" @click.stop="siteStore.closeMenu();router.go('/purchased')"><span class="icon"></span>購入記事</div>
+            <!-- <div class="menu-item"><span class="icon"></span>プロフィール編集</div> -->
             <div class="menu-item" @click.stop="localStore.actions.handleAccountClick()"><span class="icon"></span>ログアウト</div>
-        </div>
-        <div class="outside-menu">
-
         </div>
       </div>
       <div v-else class="login-container">
@@ -286,11 +285,10 @@ onMounted(async ()=>{
 
 .account-container {
   display: flex;
-            position: relative;
-            align-items: center; 
-            justify-content: center;
-            cursor: pointer;
-        }
+  position: relative;
+  align-items: center; 
+  justify-content: center;
+}
         
 .account-icon{
   width: 40px;
@@ -301,12 +299,16 @@ onMounted(async ()=>{
   color: var(--vp-c-white);
   font-weight: bold;
   font-size: 18px;
-  text-align: center;
+  cursor: pointer;
+}
+
+.account-icon:hover{
+  opacity: 0.8;
 }
 
 
 .account-container:hover {
-  opacity: 0.8;
+  
 }
 
 .dropdown-menu {

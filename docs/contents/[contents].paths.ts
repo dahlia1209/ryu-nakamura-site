@@ -1,9 +1,10 @@
-import {contentsData} from '../src/data/contents'
+import { load } from '../src/data/contents.data'
 
 export default {
-    paths() {
-        return contentsData.map(x=>x.titleNo).map(x=>{
+    async paths() {
+        const data=await load()
+        return data.contents.map(x=>x.title_no).map(x=>{
             return { params: { contents: x.toString(),title:x.toString()}}
-            })
+        })
     }
   }

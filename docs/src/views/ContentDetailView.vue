@@ -4,9 +4,10 @@ import { useContentStore } from '../stores/content';
 import { useAuthStore } from '../stores/auth';
 import { useUserStore } from '../stores/user';
 import { useOrderStore } from '../stores/order';
-import { Content } from '../models/content';
+import { Content,PreviewContent } from '../models/content';
 import { OrderItem } from '../models/order';
 import {useRouter,useRoute} from 'vitepress'
+import { data } from '../data/contents.data'
 
 const route=useRoute()
 const router=useRouter()
@@ -32,8 +33,8 @@ const localStore=(()=>{
   /*getter*/
   const contentTitleNo = computed(()=>parseInt(route.data.relativePath.split('/')[1].split('.')[0]));
 
-  const content = computed<Content | undefined>( () => {
-    return contentStore.getContentByTitleNo(contentTitleNo.value);
+  const content = computed<PreviewContent | undefined>( () => {
+    return data.contents.filter(x=>x.title_no==contentTitleNo.value)[0];
   });
 
   // Format price
@@ -55,7 +56,7 @@ const localStore=(()=>{
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    }).format(content.value.publishDate);
+    }).format(new Date(content.value.publish_date));
   });
 
   /*action*/
@@ -69,7 +70,7 @@ const localStore=(()=>{
       const orders = await orderStore.service.getPurchasedOrders(authStore.getAccessToken,userStore.user.id,content.value.id);
 
       if (orders.length == 1) {
-        contentStore.updateContentHtml(contentTitleNo.value, orders[0].content.contentHtml);
+        content.value.preview_html=orders[0].content.contentHtml
         isSubscribed.value = true
       }
     } catch (err) {
@@ -144,7 +145,6 @@ onMounted(async ()=>{
 
 watch(()=>userStore.user,async (newX) => {
   if (userStore.user) await localStore.actions.fetchOrders()
-  
 })
 
 
@@ -163,7 +163,7 @@ watch(()=>userStore.user,async (newX) => {
 
     <div class="content-header">
       <div class="featured-image">
-        <img :src="localStore.getters.content.value!.imageUrl" :alt="localStore.getters.content.value!.title">
+        <img :src="localStore.getters.content.value!.image_url" :alt="localStore.getters.content.value!.title">
       </div>
       <h1>{{ localStore.getters.content.value!.title }}</h1>
       <div class="content-meta">
@@ -181,19 +181,19 @@ watch(()=>userStore.user,async (newX) => {
       </div>
     </div>
 
-    <div class="note-warning" v-if="localStore.getters.content.value && localStore.getters.content.value.noteUrl">
+    <div class="note-warning" v-if="localStore.getters.content.value && localStore.getters.content.value.note_url">
         <div class="warning-icon">⚠️</div>
         <div class="warning-content">
           <p class="warning-title">【重要】決済システムはテスト実装です</p>
           <p>現在、本サイトのクレジットカード決済システムはテスト実装中のため、購入手続きを行わないでください。</p>
           <p>このコンテンツをご覧になりたい場合は、以下のnoteリンクからご購入ください：</p>
-          <a :href="localStore.getters.content.value.noteUrl" target="_blank" class="note-link">noteで読む</a>
+          <a :href="localStore.getters.content.value.note_url" target="_blank" class="note-link">noteで読む</a>
         </div>
       </div>
 
     <LoadingSpinner v-if="localStore.state.isLoading.value" />
 
-    <div v-else class="content-body" v-html="localStore.getters.content.value!.contentHtml"></div>
+    <div v-else class="content-body" v-html="localStore.getters.content.value!.preview_html"></div>
 
     <section v-if="[
           !localStore.state.isLoading.value,
@@ -203,6 +203,7 @@ watch(()=>userStore.user,async (newX) => {
         <div class="split-border"></div>
         <div class="split-content">ここから先は</div>
       </div>
+      <div class="remaining_text_length">残り {{ localStore.getters.content.value!.remaining_text_length }} 字</div>
 
       <div class="simplified-checkout">
         <div class="payment-method-section">
@@ -713,5 +714,11 @@ input {
   .warning-icon {
     margin-bottom: 10px;
   }
+}
+
+.remaining_text_length{
+  text-align: center;
+  font-size: 16px;
+  color: var(--vp-c-text-1);
 }
 </style>

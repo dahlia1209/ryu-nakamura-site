@@ -8,17 +8,29 @@ import {
 
 
 export function useAuthService() {
-  // MSAL設定
-  const msalConfig = {
-    auth: {
-      clientId: import.meta.env.VITE_AZURE_CLIENT_ID,
-      authority: `https://ryunakamura.b2clogin.com/ryunakamura.onmicrosoft.com/B2C_1_signupsignin1`,
-      redirectUri:import.meta.env.VITE_FRONT_URL,
-      knownAuthorities: ['ryunakamura.b2clogin.com'],
+  // ログインリクエスト設定
+  const loginRequest = {
+    scopes: [
+      'profile',
+      'email',
+      'api://0cc603b5-6641-4b33-9984-93462339fd6d/orders.read',
+      'api://0cc603b5-6641-4b33-9984-93462339fd6d/orders.write',
+      'api://0cc603b5-6641-4b33-9984-93462339fd6d/users.read',
+      'api://0cc603b5-6641-4b33-9984-93462339fd6d/users.write',
+    ],
+  }
+
+  // MSAL インスタンスの作成
+  const msalInstance = new PublicClientApplication({
+    auth:{
+      clientId:import.meta.env.VITE_AZURE_CLIENT_ID,
+      authority:`https://ryun.ciamlogin.com/ryun.onmicrosoft.com`,
+      redirectUri:`${import.meta.env.VITE_FRONT_URL}/authcallback`
     },
     cache: {
       cacheLocation: 'localStorage',
       storeAuthStateInCookie: false,
+      
     },
     system: {
       loggerOptions: {
@@ -30,28 +42,15 @@ export function useAuthService() {
         logLevel: LogLevel.Error,
       },
     },
-  }
-
-  // ログインリクエスト設定
-  const loginRequest = {
-    scopes: [
-      'openid',
-      'profile',
-      'offline_access',
-      'https://ryunakamura.onmicrosoft.com/ryu-nakamura-api/orders.read',
-      'https://ryunakamura.onmicrosoft.com/ryu-nakamura-api/orders.write',
-      'https://ryunakamura.onmicrosoft.com/ryu-nakamura-api/users.read',
-      'https://ryunakamura.onmicrosoft.com/ryu-nakamura-api/users.write',
-    ],
-  }
-
-  // MSAL インスタンスの作成
-  const msalInstance = new PublicClientApplication(msalConfig)
+  })
   let msalInitialized = false
 
-  async function login() {
+  async function login(path:string="/") {
     try {
-      const response = await msalInstance.loginRedirect(loginRequest)
+      const response = await msalInstance.loginRedirect({
+        scopes:loginRequest.scopes,
+        redirectStartPage:`${import.meta.env.VITE_FRONT_URL}/authcallback?path=${path}`
+      })
       return response
     } catch (error) {
       console.error('Login error:', error)
@@ -63,6 +62,7 @@ export function useAuthService() {
     if (userInfo != null) {
       const response = await msalInstance.logoutRedirect({
         account: userInfo,
+        
       })
       return response
     }

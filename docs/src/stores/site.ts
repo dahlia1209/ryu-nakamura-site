@@ -8,6 +8,7 @@ export const useSiteStore = defineStore('site', {
     state: () => ({
       isAccountMenuOpen:false,
       isMenuOpen:false,
+      isLoading:true
     }),
     getters: {
     },

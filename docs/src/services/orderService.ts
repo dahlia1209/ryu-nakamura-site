@@ -3,11 +3,14 @@ import  { type OrderStatus,Order,type IOrderResponse,type IOrderItemRequest,Orde
 export function useOrderService(apiBaseUrl: string = import.meta.env.VITE_API_ENDPOINT) {
   const orderEndpoint = new URL(`${apiBaseUrl}/orders`)
 
-  async function getPurchasedOrders(accessToekn:string,userId:string,contentId:string,status:OrderStatus="complete") {
+  async function getPurchasedOrders(accessToekn:string, userId:string, contentId?:string, status:OrderStatus="complete") {
     const endpoint=new URL(orderEndpoint)
-    endpoint.searchParams.append("user_id",userId)
-    endpoint.searchParams.append("content_id",contentId)
-    endpoint.searchParams.append("status",status)
+    endpoint.searchParams.append("user_id", userId)
+    if (contentId) {
+      endpoint.searchParams.append("content_id", contentId)
+    }
+    endpoint.searchParams.append("status", status)
+    
     const response = await fetch(endpoint, {
       method: 'GET',
       headers: {

@@ -50,17 +50,6 @@ const localStore = (() => {
     } 
   }
 
-  async function upsertUser(user: User) {
-    try {
-      const response = await userStore.service.upsertUser(authStore.getAccessToken, user);
-    } catch (err) {
-      console.error('Error fetching content:', err);
-      error.value = err instanceof Error ? err.message : 'コンテンツの取得中にエラーが発生しました。';
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
 
   /*return */
   return {
@@ -74,7 +63,6 @@ const localStore = (() => {
     actions: {
       handleLoginClick,
       handleAccountClick,
-      upsertUser,
     }
   }
 })()

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import HeaderItem from '../../src/components/HeaderItem.vue'
 import FooterItem from '../../src/components/FooterItem.vue'
+import NotificationToast from '../../src/components/NotificationToast.vue'
 import NotFoundView from './NotFoundView.vue'
 import { useData,Content,useRoute } from 'vitepress'
-import { onBeforeMount, onMounted, watchEffect,ref } from 'vue'
+import { onBeforeMount, onMounted, watchEffect,ref, computed,watch } from 'vue'
 
 
 import { useAuthStore } from '../../src/stores/auth'
@@ -14,10 +15,49 @@ import { useContentStore } from '../../src/stores/content'
 const authStore = useAuthStore()
 const userStore = useUserStore()
 const siteStore = useSiteStore()
+const route = useRoute()
 const { page } = useData()
+
+const localStore=(()=>{
+  /*state*/
+  const searchParams=ref(new URLSearchParams())
+  const message=ref("")
+
+  /*getter*/
+  const getRegistrationCompleted=computed(()=>searchParams.value.has('registration','completed'))
+  const getPurchasedCompleted=computed(()=>searchParams.value.has('purchased','completed'))
+  const getNotificationFlag=computed(()=>[getRegistrationCompleted.value,getPurchasedCompleted.value].some(x=>x===true))
+  const getPath=computed(()=>route.path)
+  
+  /*action*/
+  const updateMessage=()=>{
+    if(getRegistrationCompleted.value) message.value="会員登録ありがとうございます！"
+    else if(getPurchasedCompleted.value) message.value="ご購入ありがとうございます！"
+  }
+
+
+  //戻り値
+return {
+  state:{
+    searchParams,
+    message,
+  },
+  getters:{
+    getRegistrationCompleted,
+    getPurchasedCompleted,
+    getNotificationFlag,
+    getPath,
+  },
+  actions:{
+    updateMessage
+  }
+}
+})()
 
 onMounted(async ()=>{
   try {
+    localStore.state.searchParams.value = new URLSearchParams(window.location.search);
+    localStore.actions.updateMessage()
     await authStore.authService.initialize()
     await authStore.checkAuthStatus();
     if (authStore.userInfo) userStore.updateUserFromAccountInfo(authStore.userInfo)
@@ -28,6 +68,12 @@ onMounted(async ()=>{
   }
 })
 
+watch(
+  [localStore.getters.getPath]
+  ,([newA],[oldA])=>{
+    localStore.state.searchParams.value = new URLSearchParams(window.location.search);
+    localStore.actions.updateMessage()
+})
 </script>
 
 <template >
@@ -35,6 +81,7 @@ onMounted(async ()=>{
     <HeaderItem />
   </header>
   <main  @click="siteStore.closeMenu()">
+    <NotificationToast v-if="localStore.getters.getNotificationFlag.value" :type="'success'" :message="localStore.state.message.value" />
     <NotFoundView v-if="page.isNotFound" />
     <Content v-else />
   </main>

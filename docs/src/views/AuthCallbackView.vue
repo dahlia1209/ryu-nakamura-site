@@ -2,7 +2,7 @@
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import HomeTable from '../components/HomeTable.vue'
 import {Headline} from '../models/page'
-import {onMounted, ref,watch} from 'vue'
+import {onMounted, ref,watch,computed} from 'vue'
 import {useRoute,useRouter} from 'vitepress'
 import { useUserStore } from '../stores/user';
 import { useAuthStore } from '../stores/auth'
@@ -18,6 +18,11 @@ const siteStore = useSiteStore()
 const localStore=(()=>{
   /*state*/
   const params=ref('/')
+  const getIsSiteLoading=computed(()=>siteStore.isLoading)
+  const getIsAuthenticated=computed(()=>authStore.userInfo!=null)
+  const getIsGuest=computed(()=>userStore.user==null)
+  const getIsFetchReady=computed(()=>[!getIsSiteLoading.value,getIsAuthenticated.value,!getIsGuest.value].every(x=>x===true))
+  
 
   /*getter*/
   
@@ -30,6 +35,10 @@ return {
     params
   },
   getters:{
+    getIsSiteLoading,
+    getIsAuthenticated,
+    getIsGuest,
+    getIsFetchReady,
   },
   actions:{
 
@@ -43,19 +52,22 @@ onMounted(async ()=>{
 })
 
 watch(
-  [()=>siteStore.isLoading,()=>authStore.userInfo,()=>userStore.user]
+  [localStore.getters.getIsSiteLoading,localStore.getters.getIsAuthenticated,localStore.getters.getIsGuest]
   ,async ([newA,newB,newC],[oldA,oldB,oldC]) =>{
   if(newA){
     return
   } else if(!newB){
     router.go(localStore.state.params.value);
-  }else if(!newC){
+  }else if(newC){
     router.go(localStore.state.params.value);
   }else{
     try {
-      await userStore.service.upsertUser(authStore.getAccessToken, newC);
-      router.go(localStore.state.params.value);
+      const user=await userStore.service.upsertUser(authStore.getAccessToken, userStore.user!);
+      const targetUrl = new URL(localStore.state.params.value, import.meta.env.VITE_FRONT_URL);
+      if (user.createdAt ) targetUrl.searchParams.set('registration', 'completed');
+      router.go(targetUrl.pathname + targetUrl.search);
     } catch (error) {
+      
       router.go(localStore.state.params.value);
     }
   }

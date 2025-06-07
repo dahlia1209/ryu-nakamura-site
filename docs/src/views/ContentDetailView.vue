@@ -93,7 +93,7 @@ const localStore=(()=>{
       if (!userStore.user ) throw new Error("ログイン（アカウント登録）してからご購入ください。")
       if (!content.value ) throw new Error("コンテンツが取得できません")
       const orderItem=getOrderItem(userStore.user.id,content.value.id)
-      const successUrl=`${import.meta.env.VITE_FRONT_URL}${route.path}`
+      const successUrl=`${import.meta.env.VITE_FRONT_URL}${route.path}?purchased=completed`
       const cancelUrl=`${import.meta.env.VITE_FRONT_URL}${route.path}`
       const checkoutUrl = await orderStore.service.purchaseOrder(authStore.getAccessToken,orderItem,successUrl,cancelUrl);
       window.location.href = checkoutUrl

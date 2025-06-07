@@ -1,9 +1,9 @@
-
+/// <reference types="vite/client" />
 // You can directly import Vue files in the theme entry
 // VitePress is pre-configured with @vitejs/plugin-vue.
-// import '../../src/assets/main.css'
 import './custom.css'
 import type { Theme } from 'vitepress'
+
 import DefaultTheme from 'vitepress/theme-without-fonts'
 import { createPinia } from 'pinia'
 import Layout from './LayoutView.vue'
@@ -17,7 +17,8 @@ export default {
     const pinia = createPinia()
     app.use(pinia)
     const contentStore=useContentStore()
-    
     contentStore.updateWorkItems(workData)
+
+    
   }
 } satisfies Theme

@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import HomeHeadline from '../components/HomeHeadline.vue';
 import { Headline } from '../models/page';
 import { useContactStore } from '../stores/contact'
-import { type EmailMessage } from '../models/contact';
+import { type EmailMessage,type ContactMessage } from '../models/contact';
 
 const contactStore = useContactStore()
 
@@ -23,19 +23,13 @@ const submitForm = async () => {
   submitting.value = true;
 
   try {
-    const emailMessagge = {
-      senderAddress: import.meta.env.VITE_SENDER_ADDRESS,
-      content: {
-        subject: !subject.value ? '(no title)' : subject.value,
-        plainText: message.value,
-        html: `<html><body>${message.value}</body></html>`,
-      },
-      recipients: {
-        to: [{ address: email.value }]
-      },
-      senderName: name.value
-    } as EmailMessage
-    const response = await contactStore.service.sendmail(emailMessagge)
+    const contactMessage = {
+      name:name.value,
+      email:email.value,
+      message:message.value,
+      subject:subject.value
+    } as ContactMessage
+    const response = await contactStore.service.sendmail(contactMessage)
     const result = await response.json();
     submitted.value = true
   } catch (error) {

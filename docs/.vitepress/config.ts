@@ -4,7 +4,9 @@ import {load} from '../src/data/contents.data'
 export default defineConfig({
   title: "Ryu Nakamura",
   description: "Ryu's web site",
-  head: [['link', { rel: 'icon', href: '/home.svg' }]],
+  head: [
+    ['link', { rel: 'icon', href: '/home.svg' }],
+  ],
   
   async transformPageData(pageData, { siteConfig }) {
     //サブ関数
@@ -17,8 +19,30 @@ export default defineConfig({
       }
     }
 
+    const updateHeader=(pageData:PageData)=>{
+      pageData.frontmatter.head ??= []
+      pageData.frontmatter.head.push([
+        'script',
+        {
+          async: '',
+          src:'https://www.googletagmanager.com/gtag/js?id=G-63Z9Z6L98S'
+        }
+      ])
+      pageData.frontmatter.head.push([
+        'script',
+        {
+       },
+        `window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-63Z9Z6L98S');`
+      ])
+      }
+
     //メイン処理
     await updateContentsTitle(pageData)
+    if(process.env.NODE_ENV=='production')updateHeader(pageData)
     return pageData
   },
   

@@ -21,8 +21,6 @@ export const useAuthStore = defineStore('auth', {
   },
   
   actions: {
-    
-
     updateAuthStatus(auth:AuthenticationResult){
       this.accessToken=auth.accessToken
       this.userInfo=auth.account

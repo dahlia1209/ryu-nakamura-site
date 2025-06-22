@@ -92,8 +92,7 @@ const getSubmitLabel = computed(() => {
             <circle cx="12" cy="12" r="10"></circle>
             <path d="M8 12l2 2 4-4"></path>
           </svg>
-          <p>お問い合わせありがとうございます。メッセージが送信されました。</p>
-          <p>できるだけ早くご返信いたします。</p>
+          お問い合わせありがとうございます。メッセージが送信されました。
         </div>
       </div>
 

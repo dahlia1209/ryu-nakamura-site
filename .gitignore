@@ -30,5 +30,6 @@ coverage
 *.tsbuildinfo
 
 .env
+cypress.env.json
 
 cache

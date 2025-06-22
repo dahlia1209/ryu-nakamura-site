@@ -1,4 +1,4 @@
-import { defineConfig,PageData } from 'vitepress'
+import { defineConfig,PageData ,loadEnv} from 'vitepress'
 import {load} from '../src/data/contents.data'
 
 export default defineConfig({
@@ -45,5 +45,16 @@ export default defineConfig({
     if(process.env.NODE_ENV=='production')updateHeader(pageData)
     return pageData
   },
-  
+  vite: {
+    define: (() => {
+      const env = loadEnv(process.env.NODE_ENV ?? "development", `${process.cwd()}/docs`, 'VITE_')
+      const defineEnv = {}
+      
+      Object.keys(env).forEach(key => {
+        defineEnv[`import.meta.env.${key}`] = JSON.stringify(env[key])
+      })
+      
+      return defineEnv
+    })()
+  }
 })

@@ -40,6 +40,10 @@ npm run test:unit
 ### Run End-to-End Tests with [Cypress](https://www.cypress.io/)
 
 ```sh
+#API起動
+cd C:\src\ryu-nakamura-api
+func start
+#Cypress起動
 npm run test:e2e:dev
 ```
 

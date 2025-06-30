@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch,useTemplateRef, watchEffect } from 'vue';
+import { ref, computed, onMounted, watch, useTemplateRef, watchEffect } from 'vue';
 import { useContentStore } from '../stores/content';
 import { useAuthStore } from '../stores/auth';
 import { useUserStore } from '../stores/user';
 import { useOrderStore } from '../stores/order';
-import { Content,PreviewContent } from '../models/content';
+import { Content, PreviewContent } from '../models/content';
 import { OrderItem } from '../models/order';
-import {useRouter,useRoute} from 'vitepress'
+import { useRouter, useRoute } from 'vitepress'
 import { data } from '../data/contents.data'
 
-const route=useRoute()
-const router=useRouter()
+const route = useRoute()
+const router = useRouter()
 
 import LoadingSpinner from '../components/LoadingSpinner.vue';
 
@@ -21,26 +21,26 @@ const userStore = useUserStore();
 const orderStore = useOrderStore();
 const target = useTemplateRef('target-to-scroll')
 
-const localStore=(()=>{
+const localStore = (() => {
   /*state*/
   const isSubmitting = ref(false);
   const error = ref<string | null>(null);
   const checkoutUrl = ref<string | null>(null);
-  const isLoading = ref(true); 
-  const isSubscribed=ref(false)
-  const isAuthenticated=ref(authStore.isAuthenticated)
+  const isLoading = ref(true);
+  const isSubscribed = ref(false)
+  const isAuthenticated = ref(authStore.isAuthenticated)
 
   /*getter*/
-  const contentTitleNo = computed(()=>parseInt(route.data.relativePath.split('/')[1].split('.')[0]));
+  const contentTitleNo = computed(() => parseInt(route.data.relativePath.split('/')[1].split('.')[0]));
 
-  const content = computed<PreviewContent | undefined>( () => {
-    return data.contents.filter(x=>x.title_no==contentTitleNo.value)[0];
+  const content = computed<PreviewContent | undefined>(() => {
+    return data.contents.filter(x => x.title_no == contentTitleNo.value)[0];
   });
 
   // Format price
   const formattedPrice = computed(() => {
     if (!content.value) return '';
-    
+
     return new Intl.NumberFormat('ja-JP', {
       style: 'currency',
       currency: 'JPY',
@@ -51,7 +51,7 @@ const localStore=(()=>{
   // Format date
   const formattedDate = computed<string>(() => {
     if (!content.value) return '';
-    
+
     return new Intl.DateTimeFormat('ja-JP', {
       year: 'numeric',
       month: 'long',
@@ -65,12 +65,12 @@ const localStore=(()=>{
     try {
       isLoading.value = true;
       // APIからコンテンツの詳細を取得
-      if (!userStore.user ) throw new Error("ログインされていません。")
-      if (!content.value ) throw new Error("コンテンツが取得できません")
-      const orders = await orderStore.service.getPurchasedOrders(authStore.getAccessToken,userStore.user.id,content.value.id);
+      if (!userStore.user) throw new Error("ログインされていません。")
+      if (!content.value) throw new Error("コンテンツが取得できません")
+      const orders = await orderStore.service.getPurchasedOrders(authStore.getAccessToken, userStore.user.id, content.value.id);
 
       if (orders.length == 1) {
-        content.value.preview_html=orders[0].content.contentHtml
+        content.value.preview_html = orders[0].content.contentHtml
         isSubscribed.value = true
       }
     } catch (err) {
@@ -81,7 +81,7 @@ const localStore=(()=>{
     }
   }
 
-  function getOrderItem(userId:string,contentId:string){
+  function getOrderItem(userId: string, contentId: string) {
     return new OrderItem(
       userId,
       contentId
@@ -90,12 +90,12 @@ const localStore=(()=>{
 
   async function purchaseOrder() {
     try {
-      if (!userStore.user ) throw new Error("ログイン（アカウント登録）してからご購入ください。")
-      if (!content.value ) throw new Error("コンテンツが取得できません")
-      const orderItem=getOrderItem(userStore.user.id,content.value.id)
-      const successUrl=`${import.meta.env.VITE_FRONT_URL}${route.path}?purchased=completed`
-      const cancelUrl=`${import.meta.env.VITE_FRONT_URL}${route.path}`
-      const checkoutUrl = await orderStore.service.purchaseOrder(authStore.getAccessToken,orderItem,successUrl,cancelUrl);
+      if (!userStore.user) throw new Error("ログイン（アカウント登録）してからご購入ください。")
+      if (!content.value) throw new Error("コンテンツが取得できません")
+      const orderItem = getOrderItem(userStore.user.id, content.value.id)
+      const successUrl = `${import.meta.env.VITE_FRONT_URL}${route.path}?purchased=completed`
+      const cancelUrl = `${import.meta.env.VITE_FRONT_URL}${route.path}`
+      const checkoutUrl = await orderStore.service.purchaseOrder(authStore.getAccessToken, orderItem, successUrl, cancelUrl);
       window.location.href = checkoutUrl
 
     } catch (err) {
@@ -105,45 +105,46 @@ const localStore=(()=>{
 
     }
   }
-  
-  function scrollToTarget(){ 
-    if(target.value==null) return
-    target.value.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
-      }); 
-      };
+
+  function scrollToTarget() {
+    if (target.value == null) return
+    target.value.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+  };
 
   //戻り値
-return {
-  state:{
-    isSubmitting,
-    error,
-    checkoutUrl,
-    isLoading,
-    isSubscribed,
-    isAuthenticated
-  },
-  getters:{
-    content,
-    formattedPrice,
-    contentId: contentTitleNo,
-    formattedDate
-  },
-  actions:{
-    purchaseOrder,
-    scrollToTarget,
-    fetchOrders,
+  return {
+    state: {
+      isSubmitting,
+      error,
+      checkoutUrl,
+      isLoading,
+      isSubscribed,
+      isAuthenticated
+    },
+    getters: {
+      content,
+      formattedPrice,
+      contentId: contentTitleNo,
+      formattedDate
+    },
+    actions: {
+      purchaseOrder,
+      scrollToTarget,
+      fetchOrders,
+    }
   }
-}
 })()
 
-onMounted(async ()=>{
+onMounted(async () => {
+  console.log(data)
   if (userStore.user) await localStore.actions.fetchOrders()
-  localStore.state.isLoading.value=false
+  localStore.state.isLoading.value = false
 })
 
-watch(()=>userStore.user,async (newX) => {
+watch(() => userStore.user, async (newX) => {
   if (userStore.user) await localStore.actions.fetchOrders()
 })
 
@@ -152,7 +153,7 @@ watch(()=>userStore.user,async (newX) => {
 
 <template>
   <div class="content-detail">
-    
+
     <div class="back-link">
       <!-- <RouterLink to="/contents">&larr; コンテンツ一覧に戻る</RouterLink> -->
 
@@ -171,17 +172,17 @@ watch(()=>userStore.user,async (newX) => {
         <div v-if="[
           !localStore.state.isLoading.value,
           !localStore.state.isSubscribed.value
-        ].every(x=>x==true)" class="price-display" @click="localStore.actions.scrollToTarget()">
+        ].every(x => x == true)" class="price-display" @click="localStore.actions.scrollToTarget()">
           <span class="price-badge">{{ localStore.getters.formattedPrice.value }}</span>
         </div>
         <span v-else-if="[
           !localStore.state.isLoading.value,
           localStore.state.isSubscribed.value
-        ].every(x=>x==true)" class="subscribed-badge">購入済み</span>
+        ].every(x => x == true)" class="subscribed-badge">購入済み</span>
       </div>
     </div>
 
-    <div class="note-warning" v-if="localStore.getters.content.value && localStore.getters.content.value.note_url">
+    <!-- <div class="note-warning" v-if="localStore.getters.content.value && localStore.getters.content.value.note_url">
         <div class="warning-icon">⚠️</div>
         <div class="warning-content">
           <p class="warning-title">【重要】決済システムはテスト実装です</p>
@@ -189,16 +190,16 @@ watch(()=>userStore.user,async (newX) => {
           <p>このコンテンツをご覧になりたい場合は、以下のnoteリンクからご購入ください：</p>
           <a :href="localStore.getters.content.value.note_url" target="_blank" class="note-link">noteで読む</a>
         </div>
-      </div>
+      </div> -->
 
     <LoadingSpinner v-if="localStore.state.isLoading.value" />
 
     <div v-else class="content-body" v-html="localStore.getters.content.value!.preview_html"></div>
 
     <section v-if="[
-          !localStore.state.isLoading.value,
-          !localStore.state.isSubscribed.value
-        ].every(x=>x==true)" class="purchase-section">
+      !localStore.state.isLoading.value,
+      !localStore.state.isSubscribed.value
+    ].every(x => x == true)" class="purchase-section">
       <div class="split-block">
         <div class="split-border"></div>
         <div class="split-content">ここから先は</div>
@@ -365,6 +366,14 @@ watch(()=>userStore.user,async (newX) => {
   padding-top: 10px;
 }
 
+:deep(p) {
+  margin-bottom: 20px;
+  text-align: justify;
+  font-size: 1.1em;
+  line-height: 1.8;
+
+}
+
 /* .content-body h2::before {
   content: "";
   position: absolute;
@@ -513,7 +522,8 @@ input {
 .subscribed-badge {
   padding: 4px 15px;
   transition: all 0.3s;
-  color: green;;
+  color: green;
+  ;
   font-weight: 600;
 }
 
@@ -606,13 +616,13 @@ input {
 }
 
 .split-content {
-  font-weight: 700; 
+  font-weight: 700;
   text-align: center;
   position: relative;
   z-index: 1;
   background-color: white;
   width: fit-content;
-  margin: 0 auto; 
+  margin: 0 auto;
 }
 
 .split-border {
@@ -629,11 +639,11 @@ input {
   .content-body {
     grid-template-columns: 1fr;
   }
-  
+
   .featured-image {
     height: 250px;
   }
-  
+
   .price-card {
     position: static;
     margin-bottom: 30px;
@@ -646,11 +656,11 @@ input {
   .content-body {
     grid-template-columns: 1fr;
   }
-  
+
   .featured-image {
     height: 250px;
   }
-  
+
   .price-card {
     position: static;
     margin-bottom: 30px;
@@ -710,13 +720,13 @@ input {
   .note-warning {
     flex-direction: column;
   }
-  
+
   .warning-icon {
     margin-bottom: 10px;
   }
 }
 
-.remaining_text_length{
+.remaining_text_length {
   text-align: center;
   font-size: 16px;
   color: var(--vp-c-text-1);

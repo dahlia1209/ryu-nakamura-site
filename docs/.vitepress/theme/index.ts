@@ -18,7 +18,5 @@ export default {
     app.use(pinia)
     const contentStore=useContentStore()
     contentStore.updateWorkItems(workData)
-
-    
   }
 } satisfies Theme

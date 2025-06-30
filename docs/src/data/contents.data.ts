@@ -1,4 +1,4 @@
-import { defineLoader } from 'vitepress'
+import { defineLoader,loadEnv } from 'vitepress'
 import {PreviewContent} from '../models/content'
 
 export interface Data {
@@ -10,7 +10,8 @@ export { data }
 
 export async function  load(): Promise<Data> {
     try {
-      const response = await fetch('https://nakamurast20250505.blob.core.windows.net/root/process/contents_list.json')
+      const env = loadEnv(process.env.NODE_ENV ?? "development", `${process.cwd()}/docs`, 'VITE_')
+      const response = await fetch(env["VITE_CONTENT_LIST_FILEPATH"])
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -28,6 +29,5 @@ export async function  load(): Promise<Data> {
   }
 
 export default defineLoader({
-  watch: ['https://nakamurast20250505.blob.core.windows.net/root/process/contents_list.json'],
   load
 })

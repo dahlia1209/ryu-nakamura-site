@@ -13,8 +13,21 @@ import { data } from '../data/contents.data'
 const contentStore = useContentStore();
 const route = useRoute()
 
-const utility = (() => {
+const localStore = (() => {
+  /* state */
   const headlines = ref<Headline[]>([])
+
+
+  /* getter */
+
+
+
+  /* action */
+
+  const pushHeadline = (elem: Headline) => {
+    headlines.value.push(elem)
+  }
+
   const calculateAge = (birthDate: string) => {
     const today: Date = new Date();
     const birth: Date = new Date(birthDate);
@@ -26,15 +39,18 @@ const utility = (() => {
     return age;
   }
 
-  const pushHeadline = (elem: Headline) => {
-    headlines.value.push(elem)
-  }
-
   //返り値
   return {
-    calculateAge,
-    pushHeadline,
-    headlines
+    state: {
+      headlines,
+    },
+    getter: {
+
+    },
+    action: {
+      calculateAge,
+      pushHeadline,
+    },
   }
 })()
 
@@ -42,19 +58,20 @@ const utility = (() => {
 
 <template>
   <div class="home">
-    <HomeHeadline :headline="new Headline('purpose', '本サイトの目的')" @input-by="utility.pushHeadline" />
+    <HomeHeadline :headline="new Headline('purpose', '本サイトの目的')" @input-by="localStore.action.pushHeadline" />
     <div class="description">
       本サイトは個人開発アプリやデジタルコンテンツの紹介・販売を目的としています。<br>
     </div>
 
 
-    <HomeHeadline :headline="new Headline('works', '事業内容')" @input-by="utility.pushHeadline" />
+    <HomeHeadline :headline="new Headline('works', '事業内容')" @input-by="localStore.action.pushHeadline" />
     <div class="description">
       <h3>■デジタルコンテンツ</h3>
       <p>現在公開中のコンテンツ一覧です。</p>
-      <div class="content-grid">
-        <ContentItem v-for="content in data.contents" :key="content.title_no" :content="content" />
+      <div class="content-grid scroll-container">
+        <ContentItem v-for="content in data.contents" :key="content.title_no" :content="content" class="content-item" />
       </div>
+
 
       <h3>■アプリケーション</h3>
       <p>現在公開中のアプリケーションです。</p>
@@ -123,4 +140,68 @@ tbody tr:nth-child(even) {
   gap: 25px;
   margin-bottom: 50px;
 }
+
+/* .scroll-container {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  padding: 20px 0;
+  margin: 20px 0;
+  border-radius: 10px;
+  background: #f8f9fa;
+  scrollbar-width: thin;
+  scrollbar-color: #667eea #e9ecef;
+} */
+
+/* .scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: #e9ecef;
+  border-radius: 10px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 10px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #5a67d8, #6b46c1);
+} */
+
+/* .content-item {
+  display: inline-block;
+  width: 280px;
+  height: 200px;
+  margin: 0 15px;
+  padding: 25px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  vertical-align: top;
+  white-space: normal;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+} */
+
+/* .content-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.content-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}  */
 </style>

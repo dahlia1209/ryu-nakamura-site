@@ -1,17 +1,4 @@
-// @ts-nocheck
-
 # ryu-nakamura-site
-
-This template should help get you started developing with Vue 3 in Vite.
-
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
 
 ## Project Setup
 
@@ -19,25 +6,14 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+## ローカル環境起動
 
 ```sh
-npm run dev
+npm run docs:dev
 ```
 
-### Type-Check, Compile and Minify for Production
 
-```sh
-npm run build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-npm run test:unit
-```
-
-### Run End-to-End Tests with [Cypress](https://www.cypress.io/)
+## Run End-to-End Tests with [Cypress](https://www.cypress.io/)
 
 ```sh
 #API起動
@@ -47,23 +23,9 @@ func start
 npm run test:e2e:dev
 ```
 
-This runs the end-to-end tests against the Vite development server.
-It is much faster than the production build.
 
-But it's still recommended to test the production build with `test:e2e` before deploying (e.g. in CI environments):
 
-```sh
-npm run build
-npm run test:e2e
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
-
-### デプロイコマンド
+## デプロイコマンド
 
 ```sh
 #リソース作成
@@ -88,9 +50,16 @@ swa deploy -d $token --env production #商用
 
 ```
 
-### コンテンツ公開手順
+## コンテンツ公開手順
 ・検証APIでコンテンツ登録
 ・検証APIでコンテンツファイル生成
 ・検証環境確認
 ・商用APIでコンテンツ登録
 ・商用デプロイ
+
+## Cluade Code
+```sh
+wsl -d Ubuntu --user root
+cd /mnt/c/src/ryu-nakamura-site
+claude
+```

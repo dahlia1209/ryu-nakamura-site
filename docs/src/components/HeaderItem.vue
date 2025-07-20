@@ -80,6 +80,7 @@ onMounted(async ()=>{
 
     <nav class="navbar">
       <ul class="nav-links" :class="{ 'nav-active': siteStore.isMenuOpen }">
+        <li @click="siteStore.closeMenu(); router.go('/today-news')">トレンド</li>
         <li @click="siteStore.closeMenu(); router.go('/contents')">コンテンツ</li>
         <li @click="siteStore.closeMenu(); router.go('/about')">プロフィール</li>
         <li @click="siteStore.closeMenu(); router.go('/contact')">お問い合わせ</li>

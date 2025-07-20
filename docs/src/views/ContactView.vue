@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import HomeHeadline from '../components/HomeHeadline.vue';
 import { Headline } from '../models/page';
 import { useContactStore } from '../stores/contact'
-import { type EmailMessage,type ContactMessage } from '../models/contact';
+import { type ContactMessage } from '../models/contact';
 
 const contactStore = useContactStore()
 
@@ -110,26 +110,6 @@ const getSubmitLabel = computed(() => {
       </div>
     </div>
 
-    <div class="contact-alternatives">
-      <HomeHeadline :headline="new Headline('other-contact', 'その他の連絡方法')" />
-      <p>お問い合わせフォームを使用せずに直接連絡する場合は、以下の連絡先をご利用ください。</p>
-
-      <div class="contact-methods">
-        <div class="contact-method">
-          <h3>メール</h3>
-          <p><a href="mailto:dahlia1209@gmail.com">dahlia1209@gmail.com</a></p>
-        </div>
-
-        <!-- 必要に応じて他の連絡方法を追加できます -->
-        <!-- 
-        <div class="contact-method">
-          <h3>SNS</h3>
-          <p>Twitter: <a href="https://twitter.com/yourhandle" target="_blank">@yourhandle</a></p>
-          <p>GitHub: <a href="https://github.com/dahlia1209" target="_blank">dahlia1209</a></p>
-        </div>
-        -->
-      </div>
-    </div>
   </div>
 </template>
 

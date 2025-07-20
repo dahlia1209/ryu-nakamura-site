@@ -29,6 +29,7 @@ const localStore = (() => {
   const isLoading = ref(true);
   const isSubscribed = ref(false)
   const isAuthenticated = ref(authStore.isAuthenticated)
+  const activeTab = ref('text')
 
   /*getter*/
   const contentTitleNo = computed(() => parseInt(route.data.relativePath.split('/')[1].split('.')[0]));
@@ -71,6 +72,7 @@ const localStore = (() => {
 
       if (orders.length == 1) {
         content.value.preview_html = orders[0].content.contentHtml
+        content.value.preview_speech_url = orders[0].content.fullSpeechUrl
         isSubscribed.value = true
       }
     } catch (err) {
@@ -122,7 +124,8 @@ const localStore = (() => {
       checkoutUrl,
       isLoading,
       isSubscribed,
-      isAuthenticated
+      isAuthenticated,
+      activeTab
     },
     getters: {
       content,
@@ -139,7 +142,6 @@ const localStore = (() => {
 })()
 
 onMounted(async () => {
-  console.log(data)
   if (userStore.user) await localStore.actions.fetchOrders()
   localStore.state.isLoading.value = false
 })
@@ -182,19 +184,58 @@ watch(() => userStore.user, async (newX) => {
       </div>
     </div>
 
-    <!-- <div class="note-warning" v-if="localStore.getters.content.value && localStore.getters.content.value.note_url">
-        <div class="warning-icon">⚠️</div>
-        <div class="warning-content">
-          <p class="warning-title">【重要】決済システムはテスト実装です</p>
-          <p>現在、本サイトのクレジットカード決済システムはテスト実装中のため、購入手続きを行わないでください。</p>
-          <p>このコンテンツをご覧になりたい場合は、以下のnoteリンクからご購入ください：</p>
-          <a :href="localStore.getters.content.value.note_url" target="_blank" class="note-link">noteで読む</a>
-        </div>
-      </div> -->
-
     <LoadingSpinner v-if="localStore.state.isLoading.value" />
 
-    <div v-else class="content-body" v-html="localStore.getters.content.value!.preview_html"></div>
+    <div v-else class="content-body">
+      <div class="content-tabs">
+        <div class="tab-buttons">
+          <button 
+            class="tab-button"
+            :class="{ active: localStore.state.activeTab.value === 'text' }"
+            @click="localStore.state.activeTab.value = 'text'"
+          >
+            テキスト
+          </button>
+          <button 
+            class="tab-button"
+            :class="{ active: localStore.state.activeTab.value === 'audio' }"
+            @click="localStore.state.activeTab.value = 'audio'"
+          >
+            音声（プレビュー）
+          </button>
+          <!-- <button 
+            class="tab-button"
+            :class="{ active: localStore.state.activeTab.value === 'video' }"
+            @click="localStore.state.activeTab.value = 'video'"
+          >
+            動画
+          </button> -->
+        </div>
+        <div class="tab-content">
+          <div v-if="localStore.state.activeTab.value === 'text'" class="tab-panel" v-html="localStore.getters.content.value!.preview_html"></div>
+          <div v-if="localStore.state.activeTab.value === 'audio'" class="tab-panel">
+            <div class="audio-content">
+              <audio controls>
+                <source :src="localStore.getters.content.value?.preview_speech_url ?? '#'" type="audio/mpeg">
+                お使いのブラウザは音声の再生に対応していません。
+              </audio>
+              <div class="audio-credit">
+                音声合成: VOICEVOX:ずんだもん
+              </div>
+            </div>
+          </div>
+          <!-- <div v-if="localStore.state.activeTab.value === 'video'" class="tab-panel">
+            <div class="video-content">
+              <p>動画コンテンツが利用可能です。</p>
+              <video controls>
+                <source :src="localStore.getters.content.value?.preview_moovie_url ?? '#'" type="video/mp4">
+                お使いのブラウザは動画の再生に対応していません。
+              </video>
+            </div>
+          </div> -->
+        </div>
+      </div>
+    </div>
 
     <section v-if="[
       !localStore.state.isLoading.value,
@@ -730,5 +771,93 @@ input {
   text-align: center;
   font-size: 16px;
   color: var(--vp-c-text-1);
+}
+
+.content-tabs {
+  width: 100%;
+}
+
+.tab-buttons {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #666;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+  color: #333;
+  background-color: #f5f5f5;
+}
+
+.tab-button.active {
+  color: #2D3E50;
+  border-bottom-color: #2D3E50;
+  font-weight: 600;
+}
+
+.tab-content {
+  width: 100%;
+}
+
+.tab-panel {
+  width: 100%;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.audio-content, .video-content {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.audio-content p, .video-content p {
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.audio-content audio, .video-content video {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.audio-credit {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .tab-button {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+  }
+  
+  .audio-content, .video-content {
+    padding: 30px 15px;
+  }
 }
 </style>

@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { Content,WorkItem } from '../models/content'
-import { useContentService } from '../services/contentService'
+import { useReportService } from '../services/reportService'
 import { data} from '../data/contents.data'
 
 export const useContentStore = defineStore('content', {
     state: () => ({
-      contentService:useContentService(),
+      reportService:useReportService(),
       workItems:[] as WorkItem[],
       contentItems:[] as Content[],
     }),

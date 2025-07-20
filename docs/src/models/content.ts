@@ -12,6 +12,9 @@ export class Content {
     public publishDate: Date,
     public previewTextLength: number =100,
     public noteUrl?: string,
+    public previewSpeechUrl?: string,
+    public previewMoovieUrl?: string,
+    public fullSpeechUrl?: string,
   ) {
   }
 
@@ -29,6 +32,9 @@ export class Content {
       new Date(response.publish_date) ,
       response.preview_text_length,
       response.note_url,
+      response.preview_speech_url,
+      response.preview_moovie_url,
+      response.full_speech_url,
     )
   }
 }
@@ -46,6 +52,9 @@ export interface IContentResponse {
     publish_date: string;
     preview_text_length: number
     note_url?: string
+    preview_speech_url?: string
+    preview_moovie_url?: string
+    full_speech_url?: string
 }
 
 
@@ -94,6 +103,9 @@ export class PreviewContent {
     public publish_date: string,
     public remaining_text_length: number =100,
     public note_url?: string,
+    public preview_speech_url?: string,
+    public preview_moovie_url?: string,
+    public full_speech_url?: string,
   ) {
   }
 
@@ -111,6 +123,9 @@ export class PreviewContent {
       new Date(this.publish_date),
       0,
       this.note_url,
+      this.preview_speech_url,
+      this.preview_moovie_url,
+      this.full_speech_url,
     )
   }
 }

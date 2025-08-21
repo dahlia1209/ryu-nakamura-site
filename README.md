@@ -50,12 +50,6 @@ swa deploy -d $token --env production #商用
 
 ```
 
-## コンテンツ公開手順
-・検証APIでコンテンツ登録
-・検証APIでコンテンツファイル生成
-・検証環境確認
-・商用APIでコンテンツ登録
-・商用デプロイ
 
 ## Cluade Code
 ```sh

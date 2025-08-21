@@ -53,7 +53,6 @@ const localStore = (() => {
       youtubeContents.value.lastUpdated = youtubeResult.lastModified ?? undefined
       xContents.value.contents = xItems
       xContents.value.lastUpdated = xTrendsResult.lastModified ?? undefined
-      console.log(youtubeContents.value, xContents.value)
       localStore.state.error.value = null
     } catch (err) {
       localStore.state.error.value = 'ニュースの取得に失敗しました'

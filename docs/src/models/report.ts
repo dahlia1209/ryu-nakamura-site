@@ -114,10 +114,11 @@ export class XTrendData {
   }
 }
 
+export type CategoryType ='longest_trending'|'max_tweets'|'new_trends'|'popular_active'
 
 export interface XContent {
   id: string
-  category:string
+  category:CategoryType
   trend: string
   rank:number
   url: string
@@ -138,7 +139,7 @@ export class NewsContents<T extends MediaType>{
 }
 
 export interface XCategories{
-  name:string,
+  name:'longest_trending'|'max_tweets'|'new_trends'|'popular_active',
   displayName:string,
   items:XContent[],
 }

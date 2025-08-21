@@ -116,6 +116,13 @@ const localStore = (() => {
     });
   };
 
+  function shareToX(){
+    const text = `${route.data.title} | Ryu Nakamura`;
+    const url=`${import.meta.env.VITE_FRONT_URL}${route.path}`
+    const intent = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}%0A&url=${encodeURIComponent(url)}`;
+    window.open(intent, '_blank', 'width=600,height=400');
+  }
+
   //戻り値
   return {
     state: {
@@ -137,6 +144,7 @@ const localStore = (() => {
       purchaseOrder,
       scrollToTarget,
       fetchOrders,
+      shareToX,
     }
   }
 })()
@@ -182,6 +190,11 @@ watch(() => userStore.user, async (newX) => {
           localStore.state.isSubscribed.value
         ].every(x => x == true)" class="subscribed-badge">購入済み</span>
       </div>
+      <div class="content-meta">
+        <button class="x-logo-button" @click="localStore.actions.shareToX()">
+          <img src="../assets/logo/x-logo.png" class="x-logo" alt="x">
+        </button>
+      </div>
     </div>
 
     <LoadingSpinner v-if="localStore.state.isLoading.value" />
@@ -189,18 +202,12 @@ watch(() => userStore.user, async (newX) => {
     <div v-else class="content-body">
       <div class="content-tabs">
         <div class="tab-buttons">
-          <button 
-            class="tab-button"
-            :class="{ active: localStore.state.activeTab.value === 'text' }"
-            @click="localStore.state.activeTab.value = 'text'"
-          >
+          <button class="tab-button" :class="{ active: localStore.state.activeTab.value === 'text' }"
+            @click="localStore.state.activeTab.value = 'text'">
             テキスト
           </button>
-          <button 
-            class="tab-button"
-            :class="{ active: localStore.state.activeTab.value === 'audio' }"
-            @click="localStore.state.activeTab.value = 'audio'"
-          >
+          <button class="tab-button" :class="{ active: localStore.state.activeTab.value === 'audio' }"
+            @click="localStore.state.activeTab.value = 'audio'">
             音声（プレビュー）
           </button>
           <!-- <button 
@@ -212,7 +219,8 @@ watch(() => userStore.user, async (newX) => {
           </button> -->
         </div>
         <div class="tab-content">
-          <div v-if="localStore.state.activeTab.value === 'text'" class="tab-panel" v-html="localStore.getters.content.value!.preview_html"></div>
+          <div v-if="localStore.state.activeTab.value === 'text'" class="tab-panel"
+            v-html="localStore.getters.content.value!.preview_html"></div>
           <div v-if="localStore.state.activeTab.value === 'audio'" class="tab-panel">
             <div class="audio-content">
               <audio controls>
@@ -820,24 +828,28 @@ input {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.audio-content, .video-content {
+.audio-content,
+.video-content {
   text-align: center;
   padding: 40px 20px;
 }
 
-.audio-content p, .video-content p {
+.audio-content p,
+.video-content p {
   margin-bottom: 20px;
   font-size: 1.1rem;
   color: #666;
 }
 
-.audio-content audio, .video-content video {
+.audio-content audio,
+.video-content video {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
@@ -855,9 +867,25 @@ input {
     padding: 10px 15px;
     font-size: 0.9rem;
   }
-  
-  .audio-content, .video-content {
+
+  .audio-content,
+  .video-content {
     padding: 30px 15px;
   }
+}
+
+.x-logo-button{
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.x-logo-button:hover{
+  opacity: 0.7;
+}
+
+.x-logo{
+  width: 40px;
 }
 </style>

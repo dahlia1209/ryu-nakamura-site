@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { Content,PreviewContent } from '../models/content';
-import { withBase, useData,useRouter } from 'vitepress'
+import { Content, PreviewContent } from '../models/content';
+import { withBase, useData, useRouter } from 'vitepress'
+import { YouTubeVideoData, type YoutubeContent, type MediaType, XTrendData, NewsContents, type XContent, type XCategories } from '../models/report'
+
 
 const { theme } = useData()
-const router=useRouter()
+const router = useRouter()
 
 const props = defineProps<{
-  content: PreviewContent
+  content: YoutubeContent
+  rank:number
 }>();
 
 // Format date to human-readable
@@ -26,42 +29,41 @@ function formatPrice(price: number): string {
     currencyDisplay: 'symbol'
   }).format(price);
 }
+
+const formatViews = (dateString: string): string => {
+  const date = new Date(dateString)
+  return date.toLocaleString('ja-JP', {
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 </script>
 
 <template>
   <div class="content-card">
     <div class="image-container">
-      <img 
-        :src="content.image_url" 
-        :alt="content.title"
-      >
+      <img :src="content.thumbnail" :alt="content.title">
     </div>
-    
+
     <div class="content-info">
+      <div class= 'ranking-number'>
+              {{rank}}
+            </div>
       <h3>{{ content.title }}</h3>
-      
-      <div class="description">{{ content.preview_text }}</div>
-      
-      <div class="meta-info">
-        <div class="tags">
-          <span v-for="(tag, index) in content.tags" :key="index" class="tag">
-            {{ tag }}
-          </span>
-        </div>
-        <div class="publish-date">{{ formatDate(new Date(content.publish_date)) }}</div>
+      <div class="description">{{ content.description }}</div>
+
+      <div class="video-info">
+        <span class="views">{{ content.views.toLocaleString() }} 回視聴</span>
+        <span class="publish-time">{{ formatViews(content.publishedAt.toISOString()) }}</span>
       </div>
-      
-      <div class="price-section">
-        <div class="price">{{ formatPrice(content.price) }}</div>
-      </div>
-      
+
       <div class="action-buttons">
-        <a :href="(`/contents/${content.title_no}`)" class="details-button">
-          詳細を見る
+        <a :href="content.url" target="_blank" rel="noopener noreferrer" class="details-button" >
+          <img src="https://nakamurast20250505.blob.core.windows.net/root/content-image/2001.png" alt="logo" class="logo">
         </a>
-        <a v-if="content.note_url" :href="content.note_url" target="_blank" class="note-link">
-          <img src="../assets/logo/note_logo.svg" alt="note_logo" class="note-icon">
-        </a>
+        
       </div>
     </div>
   </div>
@@ -125,17 +127,23 @@ h3 {
   color: var(--color-heading);
   font-size: 1.3rem;
   line-height: 1.4;
+  height: calc(1.4em * 3);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .description {
   margin-bottom: 15px;
   color: var(--color-text);
-  line-height: 1.6;
+  line-height: 1.4;
   flex-grow: 1;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  height: calc(1.4em * 4);
 }
 
 .meta-info {
@@ -186,34 +194,30 @@ h3 {
   cursor: pointer;
 }
 
-/* .details-button {
-  background-color: #41b883;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  font-weight: 500;
-  text-decoration: none;
-  display: block;
-  text-align: center;
-  transition: background-color 0.3s;
-  width: 100%;
-} */
+.video-info {
+  display: flex;
+  align-items: center;
+  color: #999;
+}
 
-/* .details-button:hover {
-  background-color: #389f70;
-} */
+.views {
+  font-weight: bold;
+  color: #666;
+  flex: 1;
+}
 
-.details-button, .note-link {
+.publish-time {
+  color: #888;
+  flex: 1;
+}
+
+.details-button{
   padding: 8px 12px;
-  border-radius: 4px;
-  text-decoration: none;
-  font-weight: 500;
-  transition: background-color 0.3s;
+  display: flex;
 }
 
 .note-link {
-  background-color: #f0f0f0; 
+  background-color: #f0f0f0;
   color: black;
 }
 
@@ -224,14 +228,25 @@ h3 {
 }
 
 .details-button {
-  background-color: #41b883; 
+  background-color: #f0f0f0; 
   color: white;
 }
 
 
-.note-link:hover,.details-button:hover {
+.note-link:hover,
+.details-button:hover {
   opacity: 0.9;
 }
 
-
+.ranking-number,
+.ranking-number-10 {
+  font-size: 2em;
+  font-weight: bold;
+  color: #3498db;
+  min-width: 60px;
+  text-align: center;
+}
+.logo{
+  width: 120px;
+}
 </style>

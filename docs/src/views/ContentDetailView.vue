@@ -123,6 +123,26 @@ const localStore = (() => {
     window.open(intent, '_blank', 'width=600,height=400');
   }
 
+  function shareToLine() {
+    const text = `${route.data.title} | Ryu Nakamura`;
+    const url = `${import.meta.env.VITE_FRONT_URL}${route.path}`
+    const message = `${text}\n${url}`;
+    const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(message)}`;
+
+    if (navigator.userAgent.match(/iPhone|Android/i)) {
+      // スマートフォンの場合：LINEアプリを開く
+      window.location.href = `line://msg/text/${encodeURIComponent(message)}`;
+      // フォールバック：LINEアプリがない場合はWebページを開く
+      setTimeout(() => {
+        window.open(lineUrl, '_blank');
+      }, 1000);
+    } else {
+      // デスクトップの場合：QRコード付きページを開く
+      window.open(lineUrl, '_blank');
+    }
+    return false;
+  }
+
   //戻り値
   return {
     state: {
@@ -145,6 +165,7 @@ const localStore = (() => {
       scrollToTarget,
       fetchOrders,
       shareToX,
+      shareToLine,
     }
   }
 })()
@@ -190,9 +211,12 @@ watch(() => userStore.user, async (newX) => {
           localStore.state.isSubscribed.value
         ].every(x => x == true)" class="subscribed-badge">購入済み</span>
       </div>
-      <div class="content-meta">
+      <div class="sns-share">
         <button class="x-logo-button" @click="localStore.actions.shareToX()">
           <img src="../assets/logo/x-logo.png" class="x-logo" alt="x">
+        </button>
+        <button class="line-logo-button" @click="localStore.actions.shareToLine()">
+          <img src="../assets/logo/line-logo.svg" class="line-logo" alt="line">
         </button>
       </div>
     </div>
@@ -874,18 +898,30 @@ input {
   }
 }
 
-.x-logo-button{
+.sns-share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  gap: 10px;
+}
+
+.x-logo-button,
+.line-logo-button{
   padding: 0;
   border: 0;
   background-color: transparent;
   cursor: pointer;
 }
 
-.x-logo-button:hover{
+.x-logo-button:hover,
+.line-logo-button:hover{
   opacity: 0.7;
 }
 
-.x-logo{
+.x-logo,
+.line-logo{
   width: 40px;
 }
 </style>

@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# XMLサイトマップの場所を指定
+Sitemap: https://www.ryu-nakamura.com/sitemap.xml
+
+# 管理ファイルなどはクロール不要
+Disallow: /admin/
+Disallow: /private/
+Disallow: /*.pdf$

@@ -29,11 +29,12 @@ export default defineConfig({
         const data = await load()
         const content=data.contents.filter((x) => x.title_no.toString() == titleNo)[0]
         pageData.title = content.title
+        pageData.description = content.meta_description ??content.preview_text 
         pageData.frontmatter.head.push(['meta', { property: 'og:title', content: `${content.title} | Ryu Nakamura` }])
-        pageData.frontmatter.head.push(['meta',{property: 'og:description',content:content.preview_text}])
+        pageData.frontmatter.head.push(['meta',{property: 'og:description',content:content.meta_description}])
         pageData.frontmatter.head.push(['meta',{property: 'og:image',content: content.image_url}])
         pageData.frontmatter.head.push(['meta',{ property: 'twitter:title', content: `${content.title} | Ryu Nakamura` }])
-        pageData.frontmatter.head.push(['meta',{property: 'twitter:description',content:content.preview_text}])
+        pageData.frontmatter.head.push(['meta',{property: 'twitter:description',content:content.meta_description}])
         pageData.frontmatter.head.push(['meta',{property: 'twitter:image',content:content.image_url}])
       }
     }

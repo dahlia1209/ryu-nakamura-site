@@ -61,7 +61,7 @@ const formatViews = (dateString: string): string => {
 
       <div class="action-buttons">
         <a :href="content.url" target="_blank" rel="noopener noreferrer" class="details-button" >
-          <img src="https://nakamurast20250505.blob.core.windows.net/root/content-image/2001.png" alt="logo" class="logo">
+          <img src="https://nakamurast20250505.blob.core.windows.net/root/content-image/2001.webp" alt="logo" class="logo">
         </a>
         
       </div>

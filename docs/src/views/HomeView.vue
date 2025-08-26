@@ -29,8 +29,8 @@ const localStore = (() => {
   const leftBtn3 = useTemplateRef<HTMLButtonElement>("left-button3")
   const rightBtn3 = useTemplateRef<HTMLButtonElement>("right-button3")
   const contentGrid3 = useTemplateRef<HTMLButtonElement>("content-grid3")
-  const xContents = ref(new NewsContents('X', 'https://nakamurast20250505.blob.core.windows.net/root/content-image/2002.png', []))
-  const youtubeContents = ref(new NewsContents('youtube', 'https://nakamurast20250505.blob.core.windows.net/root/content-image/2001.png', []))
+  const xContents = ref(new NewsContents('X', 'https://nakamurast20250505.blob.core.windows.net/root/content-image/2002.webp', []))
+  const youtubeContents = ref(new NewsContents('youtube', 'https://nakamurast20250505.blob.core.windows.net/root/content-image/2001.webp', []))
 
   /* getter */
 

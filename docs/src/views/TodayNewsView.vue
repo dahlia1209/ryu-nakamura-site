@@ -9,8 +9,8 @@ const contentStore = useContentStore();
 
 const localStore = (() => {
   /*state*/
-  const xContents = ref(new NewsContents('X', 'https://nakamurast20250505.blob.core.windows.net/root/content-image/2002.png', []))
-  const youtubeContents = ref(new NewsContents('youtube', 'https://nakamurast20250505.blob.core.windows.net/root/content-image/2001.png', []))
+  const xContents = ref(new NewsContents('X', 'https://nakamurast20250505.blob.core.windows.net/root/content-image/2002.webp', []))
+  const youtubeContents = ref(new NewsContents('youtube', 'https://nakamurast20250505.blob.core.windows.net/root/content-image/2001.webp', []))
   const activeTab = ref<MediaType>('youtube')
   const loading = ref(true)
   const error = ref<string | null>(null)

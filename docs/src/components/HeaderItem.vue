@@ -74,16 +74,16 @@ onMounted(async ()=>{
 
 <template>
   <div class="wrapper">
-    <a class="logo" @click="siteStore.closeMenu(); router.go('/')">
+    <a href="/" class="logo" @click="siteStore.closeMenu();">
       Ryu Nakamura
     </a>
 
     <nav class="navbar">
       <ul class="nav-links" :class="{ 'nav-active': siteStore.isMenuOpen }">
-        <li @click="siteStore.closeMenu(); router.go('/today-news')">トレンド</li>
-        <li @click="siteStore.closeMenu(); router.go('/contents')">コンテンツ</li>
-        <li @click="siteStore.closeMenu(); router.go('/about')">プロフィール</li>
-        <li @click="siteStore.closeMenu(); router.go('/contact')">お問い合わせ</li>
+        <li @click="siteStore.closeMenu()"><a href="/today-news" class="header-menu">トレンド</a></li>
+        <li @click="siteStore.closeMenu(); " ><a href="/contents" class="header-menu">コンテンツ</a></li>
+        <li @click="siteStore.closeMenu(); " ><a href="/about" class="header-menu">プロフィール</a></li>
+        <li @click="siteStore.closeMenu(); " ><a href="/contact" class="header-menu">お問い合わせ</a></li>
       </ul>
       <div class="burger" @click="siteStore.toggleMenu()"
         :class="{ 'toggle': siteStore.isMenuOpen }">
@@ -205,6 +205,15 @@ onMounted(async ()=>{
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
+}
+.nav-links a.header-menu  {
+  cursor: pointer;
+  color: var(--vp-c-green-3);
+  font-size: 0.9rem;
+}
+.nav-links a.header-menu:hover  {
+  opacity: 0.7;
+  color: var(--vp-c-green-3);
 }
 
 .nav-links a:hover {

@@ -1,47 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset
-      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-
+<!--  created with free sitemap generation system www.sitemapxml.jp  --> 
 <url>
   <loc>https://www.ryu-nakamura.com/</loc>
-  <lastmod>2025-08-24T11:11:45+00:00</lastmod>
-  <priority>1.00</priority>
+  <priority>1.0</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
+</url>
+<url>
+  <loc>https://www.ryu-nakamura.com/today-news</loc>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
+</url>
+<url>
+  <loc>https://www.ryu-nakamura.com/contents</loc>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
+</url>
+<url>
+  <loc>https://www.ryu-nakamura.com/about</loc>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
+</url>
+<url>
+  <loc>https://www.ryu-nakamura.com/contact</loc>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
 </url>
 <url>
   <loc>https://www.ryu-nakamura.com/contents/6</loc>
-  <lastmod>2025-08-24T11:11:45+00:00</lastmod>
-  <priority>0.80</priority>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
 </url>
 <url>
   <loc>https://www.ryu-nakamura.com/contents/5</loc>
-  <lastmod>2025-08-24T11:11:45+00:00</lastmod>
-  <priority>0.80</priority>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
 </url>
 <url>
   <loc>https://www.ryu-nakamura.com/contents/4</loc>
-  <lastmod>2025-08-24T11:11:45+00:00</lastmod>
-  <priority>0.80</priority>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
 </url>
 <url>
   <loc>https://www.ryu-nakamura.com/contents/3</loc>
-  <lastmod>2025-08-24T11:11:45+00:00</lastmod>
-  <priority>0.80</priority>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
 </url>
 <url>
   <loc>https://www.ryu-nakamura.com/contents/2</loc>
-  <lastmod>2025-08-24T11:11:45+00:00</lastmod>
-  <priority>0.80</priority>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
 </url>
 <url>
   <loc>https://www.ryu-nakamura.com/contents/1</loc>
-  <lastmod>2025-08-24T11:11:45+00:00</lastmod>
-  <priority>0.80</priority>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
 </url>
-
+<url>
+  <loc>https://www.ryu-nakamura.com/privacy</loc>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
+</url>
+<url>
+  <loc>https://www.ryu-nakamura.com/tokuteishouhou</loc>
+  <priority>0.8</priority>
+  <lastmod>2025-08-26T09:47:56+09:00</lastmod>
+</url>
 
 </urlset>

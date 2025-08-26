@@ -9,9 +9,9 @@ const currentYear = new Date().getFullYear()
   <footer>
     <div class="footer-content">
       <div class="footer-links">
-        <a @click="router.go('/privacy')">プライバシーポリシー</a>
-        <a @click="router.go('/tokuteishouhou')">特定商取引法に基づく表記</a>
-        <a @click="router.go('/contact')">お問い合わせ</a>
+        <a href="/privacy" >プライバシーポリシー</a>
+        <a href="/tokuteishouhou">特定商取引法に基づく表記</a>
+        <a href="/contact">お問い合わせ</a>
       </div>
       <div class="copyright">
         &copy; {{ currentYear }} 中村システムエンジニアリング事業所. All Rights Reserved.

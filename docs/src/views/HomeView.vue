@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import ContentsList from '../components/HomeContents.vue'
 import HomeHeadline from '../components/HomeHeadline.vue'
-import HomeTable from '../components/HomeTable.vue'
 import { Headline } from '../models/page'
 import { useContentStore } from '../stores/content';
 import WorkItem from '../components/WorkItem.vue'
 import ContentItem from '../components/ContentItem.vue';
-import YoutubeItem from '../components/YoutubeItem.vue';
-import XItem from '../components/XItem.vue';
 import { ref, useTemplateRef, onMounted, watchEffect, computed } from 'vue'
 import { useRouter, useRoute } from 'vitepress'
 import { data } from '../data/contents.data'
-import { YouTubeVideoData, type YoutubeContent, type MediaType, XTrendData, NewsContents, type XContent, type XCategories, type CategoryType } from '../models/report'
 
 
 const contentStore = useContentStore();
@@ -29,8 +24,6 @@ const localStore = (() => {
   const leftBtn3 = useTemplateRef<HTMLButtonElement>("left-button3")
   const rightBtn3 = useTemplateRef<HTMLButtonElement>("right-button3")
   const contentGrid3 = useTemplateRef<HTMLButtonElement>("content-grid3")
-  const xContents = ref(new NewsContents('X', 'https://nakamurast20250505.blob.core.windows.net/root/content-image/2002.webp', []))
-  const youtubeContents = ref(new NewsContents('youtube', 'https://nakamurast20250505.blob.core.windows.net/root/content-image/2001.webp', []))
 
   /* getter */
 
@@ -67,35 +60,6 @@ const localStore = (() => {
     }
   }
 
-  const loadTodayNews = async () => {
-    try {
-      // YouTubeデータとXトレンドデータを並行取得
-      const [youtubeResult, xTrendsResult] = await Promise.all([
-        contentStore.reportService.getYoutubeVideoReportWithMetadata(),
-        contentStore.reportService.getXTrendWithMetadata()
-      ])
-      // YouTubeデータをMediaContentフォーマットに変換
-      const youtubeJsonData: YouTubeVideoData[] = youtubeResult.data
-      const youTubeVideoData = youtubeJsonData.map(x => YouTubeVideoData.fromData(x))
-      const youtubeItems: YoutubeContent[] = youTubeVideoData.map(video => video.toYoutubeContent())
-
-      const xJsonData: XTrendData[] = xTrendsResult.data
-      const xTrendData = xJsonData.map(x => XTrendData.fromData(x))
-      const xItems: XContent[] = xTrendData.map(x => x.toXContent())
-
-      youtubeContents.value.contents = youtubeItems
-      youtubeContents.value.lastUpdated = youtubeResult.lastModified ?? undefined
-      xContents.value.contents = xItems
-      xContents.value.lastUpdated = xTrendsResult.lastModified ?? undefined
-      // localStore.state.error.value = null
-    } catch (err) {
-      // localStore.state.error.value = 'ニュースの取得に失敗しました'
-      console.error('Error loading today news:', err)
-    } finally {
-      // localStore.state.loading.value = false
-    }
-  }
-
   const formatLastUpdated = (date: Date | null): string => {
     if (!date) return ''
     return date.toLocaleString('ja-JP', {
@@ -108,18 +72,10 @@ const localStore = (() => {
     })
   }
 
-  const getXContents = (type: CategoryType) => {
-    return xContents.value.contents.filter(x => x.category == type) as XContent[]
-  }
-
-  
-
   //返り値
   return {
     state: {
       headlines,
-      youtubeContents,
-      xContents,
       leftBtn1,
       rightBtn1,
       contentGrid1,
@@ -139,15 +95,12 @@ const localStore = (() => {
       pushHeadline,
       updateButtons,
       scrollContents,
-      loadTodayNews,
       formatLastUpdated,
-      getXContents
     },
   }
 })()
 
 onMounted(async () => {
-  await localStore.action.loadTodayNews()
   localStore.action.updateButtons(localStore.state.leftBtn1.value, localStore.state.rightBtn1.value, localStore.state.contentGrid1.value)
   localStore.action.updateButtons(localStore.state.leftBtn2.value, localStore.state.rightBtn2.value, localStore.state.contentGrid2.value)
   localStore.action.updateButtons(localStore.state.leftBtn3.value, localStore.state.rightBtn3.value, localStore.state.contentGrid3.value)

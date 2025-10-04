@@ -185,40 +185,6 @@ onMounted(async () => {
         <WorkItem v-for="item in contentStore.workItems" :key="item.id" :project="item" />
       </div>
 
-      <h3>■最新トレンド</h3>
-      <div class="youtube-description-container">
-        <p>YouTubeの注目動画</p>
-        <p class="last-updated">　最終更新日時: {{
-          localStore.action.formatLastUpdated(localStore.state.youtubeContents.value.lastUpdated ?? null) }}</p>
-      </div>
-      <div class="content-grid-container scroll-btn-container">
-        <button class="scroll-btn scroll-left" ref="left-button2"
-          @click="localStore.action.scrollContents(localStore.state.leftBtn2.value, localStore.state.rightBtn2.value, localStore.state.contentGrid2.value, -320)">‹</button>
-        <button class="scroll-btn scroll-right" ref="right-button2"
-          @click="localStore.action.scrollContents(localStore.state.leftBtn2.value, localStore.state.rightBtn2.value, localStore.state.contentGrid2.value, 320)">›</button>
-        <div class="content-grid" ref="content-grid2"
-          @scroll="localStore.action.updateButtons(localStore.state.leftBtn2.value, localStore.state.rightBtn2.value, localStore.state.contentGrid2.value)">
-          <YoutubeItem v-for="(item, index) in localStore.state.youtubeContents.value.contents" :key="item.id"
-            :content="item" :rank="index + 1" />
-        </div>
-      </div>
-      <div class="x-description-container">
-        <p>Xのトレンドリスト</p>
-        <div class="last-updated">　最終更新日時: {{
-          localStore.action.formatLastUpdated(localStore.state.xContents.value.lastUpdated ?? null) }}</div>
-      </div>
-      <div class="content-grid-container scroll-btn-container">
-        <button class="scroll-btn scroll-left" ref="left-button3"
-          @click="localStore.action.scrollContents(localStore.state.leftBtn3.value, localStore.state.rightBtn3.value, localStore.state.contentGrid3.value, -320)">‹</button>
-        <button class="scroll-btn scroll-right" ref="right-button3"
-          @click="localStore.action.scrollContents(localStore.state.leftBtn3.value, localStore.state.rightBtn3.value, localStore.state.contentGrid3.value, 320)">›</button>
-        <div class="content-grid" ref="content-grid3"
-          @scroll="localStore.action.updateButtons(localStore.state.leftBtn3.value, localStore.state.rightBtn3.value, localStore.state.contentGrid3.value,)">
-          <XItem
-            v-for="(categoryType, index) in (['longest_trending', 'max_tweets', 'new_trends', 'popular_active'] as CategoryType[])"
-            :key="index" :category="categoryType" :contents="localStore.action.getXContents(categoryType)" />
-        </div>
-      </div>
 
     </div>
 

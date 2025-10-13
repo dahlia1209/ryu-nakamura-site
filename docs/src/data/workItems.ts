@@ -10,4 +10,12 @@ export const workData = [
           projectUrl: 'https://webmajiang.ryu-nakamura.com/',
           githubUrl: 'https://github.com/dahlia1209/WebMajiang-client'
         } as WorkItem,
+        {
+          id: 2,
+          title: 'ビットコインマイニングシミュレーター',
+          description: 'ブロックチェーンのマイニングプロセスを体験できるシミュレーターです。',
+          imageUrl: 'https://nakamurast20250505.blob.core.windows.net/root/content-image/1002.webp',
+          techStack: ['Vue.js', 'TypeScript'],
+          projectUrl: '/blockchain',
+        } as WorkItem,
       ]

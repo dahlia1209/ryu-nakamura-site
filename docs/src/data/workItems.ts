@@ -16,6 +16,6 @@ export const workData = [
           description: 'ブロックチェーンのマイニングプロセスを体験できるシミュレーターです。',
           imageUrl: 'https://nakamurast20250505.blob.core.windows.net/root/content-image/1002.webp',
           techStack: ['Vue.js', 'TypeScript'],
-          projectUrl: '/blockchain',
+          projectUrl: '/blockchain_simulator',
         } as WorkItem,
       ]

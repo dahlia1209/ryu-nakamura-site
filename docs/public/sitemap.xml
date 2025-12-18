@@ -25,7 +25,23 @@
 <url>
   <loc>https://www.ryu-nakamura.com/blockchain</loc>
   <priority>0.8</priority>
+  <lastmod>2025-12-13T00:00:00+09:00</lastmod>
+</url>
+<url>
+<url>
+  <loc>https://www.ryu-nakamura.com/blockchain_simulator</loc>
+  <priority>0.8</priority>
   <lastmod>2025-10-13T00:00:00+09:00</lastmod>
+</url>
+<url>
+  <loc>https://www.ryu-nakamura.com/contents/9</loc>
+  <priority>0.8</priority>
+  <lastmod>2025-11-23T00:00:00+09:00</lastmod>
+</url>
+<url>
+  <loc>https://www.ryu-nakamura.com/contents/8</loc>
+  <priority>0.8</priority>
+  <lastmod>2025-10-25T00:00:00+09:00</lastmod>
 </url>
 <url>
   <loc>https://www.ryu-nakamura.com/contents/7</loc>

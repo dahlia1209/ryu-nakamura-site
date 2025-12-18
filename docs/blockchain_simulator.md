@@ -4,7 +4,7 @@ description: ブロックチェーンマイニングシミュレーター - Nonc
 ---
 
 <script setup lang="ts">
-import AboutView from './src/views/BlockchainView.vue'
+import AboutView from './src/views/BlockchainSimulatorView.vue'
 
 </script>
 

@@ -37,9 +37,13 @@ const utility=(()=>{
 
 <template>
   <div class="about">
-    <HomeHeadline :headline="new Headline('owner','事業者情報')" @input-by="utility.pushHeadline" />
+    <HomeHeadline :headline="new Headline('owner','事業者情報','h1')" @input-by="utility.pushHeadline" />
     <div class="description">
       <HomeTable />
+    </div>
+    <HomeHeadline :headline="new Headline('owner','本サイトについて','h2')" @input-by="utility.pushHeadline" />
+    <div class="description">
+      本サイトは個人開発アプリやデジタルコンテンツの紹介・販売を目的としています。<br>
     </div>
   </div>
 </template>

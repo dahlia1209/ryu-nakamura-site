@@ -80,7 +80,7 @@ onMounted(async ()=>{
 
     <nav class="navbar">
       <ul class="nav-links" :class="{ 'nav-active': siteStore.isMenuOpen }">
-        <li @click="siteStore.closeMenu(); " ><a href="/blockchain" class="header-menu">マイニング</a></li>
+        <li @click="siteStore.closeMenu(); " ><a href="/blockchain" class="header-menu">ブロックチェーン</a></li>
         <li @click="siteStore.closeMenu(); " ><a href="/contents" class="header-menu">コンテンツ</a></li>
         <li @click="siteStore.closeMenu(); " ><a href="/about" class="header-menu">プロフィール</a></li>
         <li @click="siteStore.closeMenu(); " ><a href="/contact" class="header-menu">お問い合わせ</a></li>

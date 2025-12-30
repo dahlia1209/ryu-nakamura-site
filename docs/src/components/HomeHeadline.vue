@@ -17,12 +17,17 @@ onMounted(()=>{
 </script>
 
 <template>
-<h2 :id="props.headline.id">{{ props.headline.display }}</h2>
+<h2 v-if="props.headline.headtag=='h2'" :id="props.headline.id" v-html="props.headline.display"></h2>
+<h1 v-else-if="props.headline.headtag=='h1'" :id="props.headline.id" v-html="props.headline.display"></h1>
 
 </template>
 
 <style scoped>
 h2 {
+  border-left: 5px solid var(--vp-c-green-3);
+  padding-left: 10px;
+}
+h1 {
   border-left: 5px solid var(--vp-c-green-3);
   padding-left: 10px;
 }

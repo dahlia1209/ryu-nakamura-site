@@ -23,6 +23,24 @@ export function useBlockchainService(apiBaseUrl: string = import.meta.env.VITE_A
     return data
   }
 
+  async function listBlock() {
+    const endpoint = new URL(blockchainEndpoint + '/block/list')
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`)
+    }
+
+    const data = toCamelCase(await response.json()) as BlockData[]
+
+    return data
+  }
+
   async function getMiningLog(lines:number=1000) {
     const blobUrl = `https://nakamurast20250505.blob.core.windows.net/root/mining-logs/mining.log`
     try {
@@ -120,5 +138,6 @@ export function useBlockchainService(apiBaseUrl: string = import.meta.env.VITE_A
   return {
     getCurrentBlock,
     getMiningLog,
+    listBlock
   }
 }

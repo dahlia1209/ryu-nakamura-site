@@ -1,9 +1,11 @@
+
+
 export class Headline {
   constructor(
     public id: string,
     public display: string,
-    public link?:string,
+    public headtag?:"h1"|"h2"
   ) {
-    if (this.link==undefined) this.link=`#${this.id}`
+    if (this.headtag == null)this.headtag="h2"
   }
 }

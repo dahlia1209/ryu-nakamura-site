@@ -110,15 +110,9 @@ onMounted(async () => {
 
 <template>
   <div class="home">
-    <HomeHeadline :headline="new Headline('purpose', '本サイトの目的')" @input-by="localStore.action.pushHeadline" />
+    <HomeHeadline :headline="new Headline('purpose', 'デジタルコンテンツ','h1')" @input-by="localStore.action.pushHeadline" />
+    
     <div class="description">
-      本サイトは個人開発アプリやデジタルコンテンツの紹介・販売を目的としています。<br>
-    </div>
-
-
-    <HomeHeadline :headline="new Headline('works', '事業内容')" @input-by="localStore.action.pushHeadline" />
-    <div class="description">
-      <h3>■デジタルコンテンツ</h3>
       <p>現在公開中のコンテンツ一覧です。</p>
       <div class="content-grid-container scroll-btn-container">
         <button class="scroll-btn scroll-left" ref="left-button1"
@@ -131,8 +125,7 @@ onMounted(async () => {
             class="content-item" />
         </div>
       </div>
-
-      <h3>■アプリケーション</h3>
+      <HomeHeadline :headline="new Headline('purpose', 'アプリケーション','h2')" @input-by="localStore.action.pushHeadline" />
       <p>現在公開中のアプリケーションです。</p>
       <div class="works-grid">
         <WorkItem v-for="item in contentStore.workItems" :key="item.id" :project="item" />

@@ -1,588 +1,806 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watchEffect } from 'vue'
-import { useBlockchainStore } from '../stores/blcokchain';
-import { BlockRequest, type Difficulty, type ResultStatus, scriptToHex, type Txin, type Txout, generateKeyPair, hexToLittleEndian, generatePublicKeyHash, hash256Hex } from '../models/blockchain';
-import { type BlockData,Block } from '../models/blockchain';
-import { useBlockchainService } from '../services/blockchainService';
+import { computed, onMounted, ref } from 'vue'
+import { Block, type BlockData } from '../models/blockchain'
+import { useBlockchainService } from '../services/blockchainService'
+import HomeHeadline from '../components/HomeHeadline.vue'
+import { Headline } from '../models/page'
 
 const blockchainService = useBlockchainService();
 
 const localStore = (() => {
-  /*private */
-  const iniTxin = { n: 0, txid: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", scriptSig: "", sequence: "ffffffff", vout: 0 } as Txin
-  const iniTxout = { n: 0, value: 0, scriptPubkey: "" } as Txout
-
   /* state */
+  const header_html = `<div class="blockchain-label"><img src="/blockchain_logo.svg" alt="blockchain_logo">ブロックチェーン</div>`
   const block = ref(
     {
       version: 1,
       hash: "0000000000000000000000000000000000000000000000000000000000000000",
       previousHash: "0000000000000000000000000000000000000000000000000000000000000000",
-      merkleRoot:"0000000000000000000000000000000000000000000000000000000000000000",
+      merkleRoot: "0000000000000000000000000000000000000000000000000000000000000000",
       timestamp: Math.floor(Date.now() / 1000),
       bits: "1f00ffff",
       nonce: 0,
       transactions: []
     } as BlockData
   )
-  // const merkleRoot = ref("")
   const target = ref("00000000ffff0000000000000000000000000000000000000000000000000000")
-  const hash = ref("0000000000000000000000000000000000000000000000000000000000000000")
-  const isCalculating = ref(false)
-  const calculationTime = ref(0)
-  const maxCalculationTime = ref(60) // 計算時間の入力値
-  const difficulty = ref<Difficulty>("normal") // 難易度
-  const resultStatus = ref<ResultStatus>(null) // 計算結果のステータス
-  const txins = ref<Txin[]>([iniTxin])
-  const txouts = ref<Txout[]>([iniTxout])
-  let intervalId: number | null = null
-  const nextHeight = ref(0)
-
-  const version = ref(1)
-  const locktime = ref(0)
-  const txidout = ref("")
+  const isLoading = ref(true)
+  const error = ref<string | null>(null)
+  const miningLog = ref<string[]>([])
+  const blockList = ref([] as BlockData[])
 
   /* getter */
 
 
+  /* action */
+  const hexToLittleEndian = (hex: string) => {
+    if (hex.length % 2 !== 0) hex = '0' + hex;
+    return hex.match(/.{2}/g)?.reverse().join('') ?? hex;
+  }
 
-  //返り値
+  const truncateHash = (hash: string, start: number = 8, end: number = 8) => {
+    if (hash.length <= start + end) return hash;
+    return `${hash.slice(0, start)}...${hash.slice(-end)}`;
+  }
+
+  const formattedTimestamp = (timestamp: number) => {
+    const date: string = new Date(timestamp * 1000).toLocaleString('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+    return date
+  }
+
   return {
     state: {
-      // merkleRoot,
       block,
       target,
-      hash,
-      isCalculating,
-      calculationTime,
-      maxCalculationTime,
-      difficulty,
-      resultStatus,
-      version,
-      txins,
-      txouts,
-      locktime,
-      txidout,
-      nextHeight
-
+      isLoading,
+      error,
+      miningLog,
+      header_html,
+      blockList
     },
     getter: {
     },
     action: {
       hexToLittleEndian,
+      truncateHash,
+      formattedTimestamp
+
     },
   }
 })()
 
 onMounted(async () => {
-  const currentBlock=await blockchainService.getCurrentBlock()
-  Object.assign(localStore.state.block.value,currentBlock)
-  const b=new Block(currentBlock)
-  localStore.state.target.value=b.bitsToTarget()
+  try {
+    //現在のブロック取得
+    const currentBlock = await blockchainService.getCurrentBlock()
+    Object.assign(localStore.state.block.value, currentBlock)
+    const b = new Block(currentBlock)
+    localStore.state.target.value = b.bitsToTarget()
+
+    //マイニングログ取得
+    localStore.state.miningLog.value = (await blockchainService.getMiningLog()).slice(0, 10);
+
+    //ブロック一覧取得
+    const allBlocks = await blockchainService.listBlock()
+    localStore.state.blockList.value = allBlocks
+      .sort((a, b) => (b.height ?? 0) - (a.height ?? 0))
+      .slice(0, 20)
+
+  } catch (err) {
+    localStore.state.error.value = 'ブロック情報の取得に失敗しました'
+    console.error('Error loading block:', err)
+  } finally {
+    localStore.state.isLoading.value = false
+  }
 })
-
-// watchEffect(async () => {
-//   const rawtrandata = localStore.getter.getRawTransactionData.value
-//   localStore.state.txidout.value = await hash256Hex(rawtrandata)
-// })
-
-
-
 </script>
+
 <template>
-  <div class="mining">
-    <!-- 説明セクション -->
-    <div class="description">
-      <h2>ブロックチェーン</h2>
-      <h3>現在のブロック情報</h3>
+  <div class="blockchain-view">
+    <!-- ヘッダーセクション -->
+
+    <HomeHeadline :headline="new Headline('blockchain', localStore.state.header_html, 'h1')" />
+    <div class="page-header">
+      <h1 class="page-title">
+
+      </h1>
+      <p class="page-subtitle">本サイトオリジナルブロックチェーンの情報</p>
     </div>
 
-    <table class="mining-table">
-      <tbody>
-        <tr>
-          <th>Height</th>
-          <td>{{ localStore.state.block.value.height }}</td>
-        </tr>
-        <tr>
-          <th>Hash</th>
-          <td class="hash">{{ localStore.state.block.value.hash }}</td>
-        </tr>
-        <tr>
-          <th>Version</th>
-          <td>{{ localStore.state.block.value.version }}</td>
-        </tr>
-        <tr>
-          <th>Previous Block</th>
-          <td class="hash">{{ localStore.state.block.value.previousHash }}</td>
-        </tr>
-        <tr>
-          <th>Merkle Root</th>
-          <td class="hash">{{ localStore.state.block.value.merkleRoot }}</td>
-        </tr>
-        <tr>
-          <th>Time</th>
-          <td>{{ (new Date(localStore.state.block.value.timestamp * 1000)).toLocaleString() }}</td>
-        </tr>
-        <tr>
-          <th>Bits / Target</th>
-          <td class="hash">{{ localStore.state.block.value.bits }} / {{ localStore.state.target.value }}</td>
-        </tr>
-        <tr>
-          <th>Nonce</th>
-          <td>{{ localStore.state.block.value.nonce }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="description">
-      <h3>マイニング</h3>
-      マイニング状況は<a href="/mining_log.html">こちら</a>
+    <!-- ローディング状態 -->
+    <div v-if="localStore.state.isLoading.value" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>ブロック情報を読み込み中...</p>
     </div>
 
+    <!-- エラー状態 -->
+    <div v-else-if="localStore.state.error.value" class="error-container">
+      <svg class="error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <p>{{ localStore.state.error.value }}</p>
+    </div>
+
+    <!-- ブロック情報 -->
+    <div v-else class="content-container">
+      <!-- ブロック情報テーブル -->
+      <HomeHeadline :headline="new Headline('blockchain', 'ブロック', 'h2')" />
+      <div class="table-card">
+        <table class="block-table">
+          <tbody>
+            <tr>
+              <th>Height</th>
+              <td>{{ localStore.state.block.value.height }}</td>
+            </tr>
+            <tr>
+              <th>Hash</th>
+              <td class="hash-cell">
+                <code class="hash-value">{{ localStore.state.block.value.hash }}</code>
+              </td>
+            </tr>
+            <tr>
+              <th>Version</th>
+              <td>{{ localStore.state.block.value.version }}</td>
+            </tr>
+            <tr>
+              <th>Previous Hash</th>
+              <td class="hash-cell">
+                <code class="hash-value">{{ localStore.state.block.value.previousHash }}</code>
+              </td>
+            </tr>
+            <tr>
+              <th>Merkle Root</th>
+              <td class="hash-cell">
+                <code class="hash-value">{{ localStore.state.block.value.merkleRoot }}</code>
+
+              </td>
+            </tr>
+            <tr>
+              <th>Time(JST)</th>
+              <td>{{ localStore.action.formattedTimestamp(localStore.state.block.value.timestamp) }}</td>
+            </tr>
+            <tr>
+              <th>Bits / Target</th>
+              <td class="hash-cell">
+                <div class="hash-value">{{ localStore.state.block.value.bits }}</div>
+                <code class="hash-value">{{ localStore.state.target.value }}</code>
+              </td>
+            </tr>
+            <tr>
+              <th>Nonce</th>
+              <td>{{ localStore.state.block.value.nonce.toLocaleString() }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- トランザクション情報 -->
+      <HomeHeadline :headline="new Headline('blockchain', 'トランザクション', 'h2')" />
+      <div class="table-card">
+        <table v-for="(t, i) in localStore.state.block.value.transactions" :key="i" class="transaction-table">
+          <tbody>
+            <tr>
+              <th rowspan="5" class="transaction-index"># {{ i }}</th>
+              <th>Version</th>
+              <td>{{ t.version }}</td>
+            </tr>
+            <tr>
+              <th>Locktime</th>
+              <td>{{ t.locktime }}</td>
+            </tr>
+            <tr>
+              <th>Inputs</th>
+              <td>
+                <table v-for="(vin, j) in t.vin" :key="j" class="nested-table">
+                  <tbody>
+                    <tr v-if="t.vin!.length > 1">
+                      <th colspan="2" class="input-index">Input {{ j }}</th>
+                    </tr>
+                    <tr>
+                      <th>TXID</th>
+                      <td class="hash-cell">
+                        <code class="hash-value">{{ vin.utxoTxid }}</code>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>VOUT</th>
+                      <td>{{ vin.utxoVout }}</td>
+                    </tr>
+                    <tr>
+                      <th>scriptSig</th>
+                      <td>{{ vin.scriptSigAsm }}</td>
+                    </tr>
+                    <tr>
+                      <th>Sequence</th>
+                      <td>{{ vin.sequence }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <th>Outputs</th>
+              <td>
+                <table v-for="(output, j) in t.outputs" :key="j" class="nested-table">
+                  <tbody>
+                    <tr v-if="t.outputs!.length > 1">
+                      <th colspan="2" class="output-index">Output {{ j }}</th>
+                    </tr>
+                    <tr>
+                      <th>Amount<br>(stoshis)</th>
+                      <td>
+                        <code class="hash-value">{{ output.value }}</code>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>scriptPubKey</th>
+                      <td>{{ output.scriptPubkeyAsm }}</td>
+                    </tr>
+                    <tr>
+                      <th>scriptType</th>
+                      <td>{{ output.scriptType }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ブロック一覧 -->
+      <HomeHeadline :headline="new Headline('blockchain', 'ブロック一覧 (直近20件)', 'h2')" />
+      <div>
+        <table class="block-list-table">
+          <thead>
+            <tr>
+              <th>Height</th>
+              <th>Block Hash</th>
+              <th>Txs</th>
+              <th>Time(JST)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="block in localStore.state.blockList.value" :key="block.height!" :class="{'current-height':block.height==localStore.state.block.value.height}">
+              <th class="hash-cell">
+                <code class="hash-value" >{{ block.height }}</code>
+              </th>
+              <th class="hash-cell">
+                <code class="hash-value">{{ block.hash }}</code>
+              </th>
+              <th class="hash-cell">
+                <code class="hash-value">{{ block.transactionCount }}</code>
+              </th>
+              <th class="hash-cell">
+                <code class="hash-value">{{ localStore.action.formattedTimestamp(block.timestamp) }}</code>
+              </th>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+
+      <!-- マイニング情報 -->
+      <HomeHeadline :headline="new Headline('blockchain', 'マイニング', 'h2')" />
+      <div class="mining-info-card">
+        <h3 class="mining-title">マイニング状況</h3>
+        <div v-for="l in localStore.state.miningLog.value">
+          {{ l }}
+        </div>
+        <p>マイニングの進行状況詳細は<a href="/mining_log.html" class="mining-link">こちら</a>からご確認いただけます。</p>
+      </div>
+    </div>
   </div>
 </template>
+
 <style scoped>
-
-.description {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 24px;
-  margin-bottom: 24px;
+/* ベーススタイル */
+.blockchain-view {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  min-height: 100vh;
 }
 
-.description h2 {
-  color: #333;
-  font-size: 24px;
-  margin-top: 0;
-  margin-bottom: 12px;
+/* ヘッダーセクション */
+.page-header {
+  margin-bottom: 3rem;
 }
 
-.description p {
-  color: #555;
-  line-height: 1.6;
-  margin-bottom: 16px;
-}
-
-.how-to-use {
-  margin: 20px 0;
-}
-
-.how-to-use h3 {
-  color: #444;
-  font-size: 18px;
-  margin-bottom: 12px;
-}
-
-.how-to-use ol {
-  color: #555;
-  line-height: 1.8;
-  padding-left: 24px;
-}
-
-.how-to-use li {
-  margin-bottom: 8px;
-}
-
-.how-to-use strong {
-  color: #333;
-}
-
-.info-box {
-  background-color: #e3f2fd;
-  border-left: 4px solid #2196F3;
-  padding: 16px;
-  border-radius: 4px;
-  margin-top: 16px;
-}
-
-.info-box p {
-  margin: 0;
-  color: #1565c0;
-  line-height: 1.6;
-}
-
-.result-message {
-  padding: 16px 24px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  text-align: center;
-  font-size: 18px;
-  font-weight: 500;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.result-success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 2px solid #c3e6cb;
-}
-
-.result-timeout {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 2px solid #ffeaa7;
-}
-
-.result-cancelled {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 2px solid #f5c6cb;
-}
-
-.button-container {
-  margin: 20px 0;
-  text-align: center;
-}
-
-.input-group {
+.page-title {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 1rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
 }
 
-.input-group label {
-  font-weight: 500;
-  color: #666;
+.icon-blockchain {
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
-.difficulty-select {
-  padding: 8px 12px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
-  cursor: pointer;
+.page-subtitle {
+  font-size: 1.1rem;
+  margin: 0;
 }
 
-.difficulty-select:disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-
-.time-input {
-  width: 100px;
-  padding: 8px 12px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  text-align: center;
-}
-
-.time-input:disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-
-.unit {
-  color: #666;
-}
-
-.calculate-button {
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 500;
-  color: white;
-  background-color: #4CAF50;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.calculate-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.cancel-button {
-  background-color: #f44336;
-}
-
-.cancel-button:hover {
-  background-color: #da190b;
-}
-
-@keyframes highlightPulse {
-
-  0%,
-  100% {
-    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
-  }
-
-  50% {
-    box-shadow: 0 0 20px rgba(76, 175, 80, 0.8);
-  }
-}
-
-/* Radio Group */
-.radio-group {
+/* ローディング状態 */
+.loading-container {
   display: flex;
-  gap: 20px;
-}
-
-.radio-item {
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 1rem;
 }
 
-/* Mining Table */
-.mining-table-wrapper {
-  width: 100%;
-  overflow-x: auto;
+.loading-spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid var(--vp-c-gray-soft);
+  border-top-color: var(--vp-c-green-3);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.mining-table {
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* エラー状態 */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 1rem;
+  color: #e74c3c;
+}
+
+.error-icon {
+  width: 4rem;
+  height: 4rem;
+  color: #e74c3c;
+}
+
+/* コンテンツコンテナ */
+.content-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* テーブルカード */
+.table-card {
+  border: 1px solid var(--vp-c-gray-soft);
+  /* border-radius: 12px; */
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ブロックテーブル */
+.block-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.mining-table tbody tr {
-  border-bottom: 1px solid #e0e0e0;
+.block-table tbody tr {
+  border-bottom: 1px solid var(--vp-c-gray-soft);
+  transition: background-color 0.2s ease;
 }
 
-.mining-table tbody tr:last-child {
+.block-table tbody tr:last-child {
   border-bottom: none;
 }
 
-.mining-table tbody tr.dn {
-  display: none;
-}
-
-.mining-table th {
+.block-table th {
   text-align: left;
-  padding: 12px 16px;
-  font-weight: 500;
-  color: #666;
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  color: var(--vp-c-green-2);
+  background-color: var(--vp-c-gray-soft);
+  width: 180px;
   white-space: nowrap;
-  width: 1%;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.mining-table td {
-  padding: 12px 16px;
-  color: #333;
-  word-break: break-all;
+.block-table td {
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
 }
 
-.mining-table td.hash {
-  font-family: monospace;
-  font-size: 14px;
-}
-
-.mining-table input[type="text"],
-.mining-table input[type="number"] {
-  box-sizing: border-box;
-  padding: 10px;
-  height: 40px;
-  font-size: 16px;
-  width: 100%;
-}
-
-.mining-table textarea {
-  box-sizing: border-box;
-  padding: 10px;
-  font-size: 16px;
-  width: 100%;
-  resize: vertical;
-}
-
-/* Nested Table */
-.nested-table {
+/* トランザクションテーブル */
+.transaction-table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0;
+  border: 1px solid var(--vp-c-gray-soft);
   table-layout: auto;
 }
 
-.nested-table th,
-.nested-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
+.transaction-table tbody tr {
+  border-bottom: 1px solid var(--vp-c-gray-soft);
+  transition: background-color 0.2s ease;
+}
+
+.transaction-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.transaction-table th {
   text-align: left;
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  color: var(--vp-c-green-2);
+  background-color: var(--vp-c-gray-soft);
+  width: 1%;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.transaction-table td {
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
+.transaction-index {
+  border: 1px solid var(--vp-c-gray-soft);
+  width: 1%;
+}
+
+/* Input/Output インデックス */
+.input-index,
+.output-index {
+  text-align: center !important;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.5rem !important;
+  background-color: var(--vp-c-gray-soft);
+  word-break: normal;
+}
+
+.input-index {
+  color: var(--vp-c-blue-2);
+}
+
+.output-index {
+  color: var(--vp-c-purple-2);
+}
+
+/* ネストされたテーブル */
+.nested-table {
+  width: 100%;
+  margin: 0.5rem 0;
+  border: 1px solid var(--vp-c-gray-soft);
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.nested-table:first-child {
+  margin-top: 0;
+}
+
+.nested-table:last-child {
+  margin-bottom: 0;
 }
 
 .nested-table th {
-  background-color: #f8f8f8;
-  font-weight: bold;
+  width: 1%;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  padding: 0.75rem 1rem;
+}
+
+.nested-table td {
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
+/* トランザクションインデックス */
+.transaction-index {
+  vertical-align: middle;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--vp-c-green-3);
+  background-color: var(--vp-c-gray-soft);
   width: 1%;
   white-space: nowrap;
 }
 
-.nested-table .hash {
+/* ハイライト行 */
+.highlight-row {
+  background: linear-gradient(90deg,
+      rgba(65, 184, 131, 0.08) 0%,
+      rgba(65, 184, 131, 0.02) 100%);
+}
+
+.highlight-row th {
+  /* color: var(--vp-c-green-3); */
+  font-weight: 700;
+}
+
+/* ハッシュセル */
+.hash-cell {
+  position: relative;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  transition: all 0.2s ease;
+}
+
+
+.hash-value {
+  display: block;
   word-break: break-all;
-  font-family: monospace;
-  font-size: 0.9em;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  overflow-wrap: break-word;
 }
 
-.nested-table .separator {
-  height: 10px;
-  border: none;
-  background-color: transparent;
+
+
+
+
+/* マイニング情報カード */
+.mining-info-card {
+  border: 1px solid var(--vp-c-gray-soft);
+  padding: 1.0rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.mining-table td input,
-.mining-table td textarea {
-  font-family: monospace;
-  font-size: 14px;
+.mining-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  /* color: var(--vp-c-text-1); */
+  margin: 0 0 0.75rem 0;
 }
 
-.mining-table button {
-  font-size: 14px;
+.mining-info-card p {
+  margin: 0;
+  font-size: 1rem;
+  /* color: var(--vp-c-text-2); */
+  line-height: 1.6;
 }
 
-/* レスポンシブ対応 */
-@media screen and (max-width: 768px) {
-  .description {
-    padding: 16px;
+.mining-link {
+  color: var(--vp-c-green-3);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.mining-link:hover {
+  border-bottom-color: var(--vp-c-green-3);
+}
+
+/* レスポンシブデザイン - スマートフォン */
+@media (max-width: 480px) {
+  .blockchain-view {
+    padding: 1rem 0.75rem;
   }
 
-  .description h2 {
-    font-size: 20px;
+  .page-title {
+    font-size: 1.75rem;
+    gap: 0.5rem;
   }
 
-  .result-message {
-    font-size: 16px;
-    padding: 12px 16px;
+  .icon-blockchain {
+    width: 1.75rem;
+    height: 1.75rem;
   }
 
-  .input-group {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+  .page-subtitle {
+    font-size: 0.95rem;
   }
 
-  .input-group label {
-    text-align: center;
+
+  .block-table th {
+    width: 110px;
+    padding: 0.75rem 0.75rem;
+    font-size: 0.75rem;
   }
 
-  .difficulty-select,
-  .time-input,
-  .calculate-button {
-    width: 100%;
-    max-width: 300px;
-    margin: 0 auto;
+  .block-table td {
+    padding: 0.75rem 0.75rem;
+    font-size: 0.85rem;
   }
 
-  /* テーブルをカード型レイアウトに */
-  .mining-table {
-    min-width: 100%;
+  .hash-value {
+    font-size: 0.7rem;
+    line-height: 1.5;
   }
 
-  .mining-table tbody tr {
-    display: block;
-    margin-bottom: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 12px;
+  .mining-info-card {
+    padding: 1.0rem;
+    /* border-radius: 8px; */
   }
 
-  .mining-table th,
-  .mining-table td {
-    display: block;
-    width: 100%;
-    padding: 8px;
-    text-align: left;
+  .mining-title {
+    font-size: 1.1rem;
   }
 
-  .mining-table th {
-    background-color: #f8f8f8;
-    font-weight: bold;
-    border-bottom: 1px solid #ddd;
-    margin-bottom: 8px;
+  .mining-info-card p {
+    font-size: 0.9rem;
+  }
+}
+
+/* レスポンシブデザイン - スマートフォン */
+@media (max-width: 480px) {
+  .blockchain-view {
+    padding: 1rem 0.75rem;
   }
 
-  .mining-table td {
-    border: none;
+  .page-title {
+    font-size: 1.75rem;
+    gap: 0.5rem;
   }
 
-  /* ネストされたテーブルもカード型に */
+  .icon-blockchain {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .block-table th {
+    width: 110px;
+    padding: 0.75rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .block-table td {
+    padding: 0.75rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  /* トランザクションテーブル - スマートフォン */
+  .transaction-table th {
+    width: 90px;
+    padding: 0.625rem 0.5rem;
+    font-size: 0.75rem;
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  .transaction-table td {
+    padding: 0.625rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .transaction-index {
+    min-width: 40px;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.25rem;
+    width: 1%;
+    white-space: nowrap;
+  }
+
   .nested-table {
-    display: block;
-  }
-
-  .nested-table tbody {
-    display: block;
-    margin-bottom: 16px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px;
-  }
-
-  .nested-table tr {
-    display: block;
-    margin-bottom: 8px;
-  }
-
-  .nested-table th,
-  .nested-table td {
-    display: block;
-    width: 100%;
-    border: none;
-    padding: 4px 8px;
+    margin: 0.25rem 0;
   }
 
   .nested-table th {
-    background-color: #f0f0f0;
-    font-weight: bold;
-    margin-bottom: 4px;
+    width: 1%;
+    white-space: nowrap;
+    padding: 0.5rem 0.5rem;
+    font-size: 0.75rem;
   }
 
-  .nested-table .separator {
-    display: none;
+  .nested-table td {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.8rem;
   }
 
-  /* ボタンのサイズ調整 */
-  .mining-table button,
-  .nested-table button {
-    width: 100%;
-    max-width: 200px;
-    margin: 8px auto;
-    display: block;
+  .input-index,
+  .output-index {
+    font-size: 0.8rem;
+    padding: 0.4rem !important;
   }
 
-  .radio-group {
-    flex-direction: column;
-    gap: 12px;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .description {
-    padding: 12px;
+  .hash-value {
+    font-size: 0.7rem;
+    line-height: 1.5;
   }
 
-  .description h2 {
-    font-size: 18px;
+  .mining-info-card {
+    padding: 1.0rem;
   }
 
-  .how-to-use h3 {
-    font-size: 16px;
+  .mining-title {
+    font-size: 1.1rem;
   }
 
-  .mining-table input[type="text"],
-  .mining-table input[type="number"],
-  .mining-table textarea {
-    font-size: 14px;
-  }
-
-  .calculate-button {
-    font-size: 14px;
-    padding: 10px 20px;
+  .mining-info-card p {
+    font-size: 0.9rem;
   }
 }
 
+.block-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--vp-c-gray-soft);
+}
+
+.block-list-table thead {
+  background-color: var(--vp-c-gray-soft);
+}
+
+.block-list-table thead tr {
+  border: 2px solid var(--vp-c-gray-soft);
+}
+
+.block-list-table thead th {
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+  font-weight: 600;
+  color: var(--vp-c-green-2);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.block-list-table tbody tr {
+  border: 1px solid var(--vp-c-gray-soft);
+  transition: background-color 0.2s ease;
+}
+
+.block-list-table tbody tr:last-child {
+  border: none;
+}
+
+.block-list-table tbody th {
+  text-align: left;
+  font-weight: 400;
+}
+
+.current-height{
+  background-color: #fef9c3;
+}
+
+/* レスポンシブデザイン - スマートフォン */
+@media (max-width: 480px) {
+  .block-list-table thead th {
+    font-size: 0.75rem;
+  }
+
+  .block-list-table tbody th {
+    padding: 0 0.25rem;
+    font-size: 0.85rem;
+  }
+}
+
+:deep(.blockchain-label) {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+:deep(.blockchain-label img) {
+  height: 1em;
+  width: auto;
+}
 </style>

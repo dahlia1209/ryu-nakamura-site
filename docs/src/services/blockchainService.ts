@@ -23,6 +23,24 @@ export function useBlockchainService(apiBaseUrl: string = import.meta.env.VITE_A
     return data
   }
 
+  async function getBlock(hash:string) {
+    const endpoint = new URL(blockchainEndpoint + `/block?hash=${hash}`)
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`)
+    }
+
+    const data = toCamelCase(await response.json()) as BlockData
+
+    return data
+  }
+
   async function listBlock() {
     const endpoint = new URL(blockchainEndpoint + '/block/list')
     const response = await fetch(endpoint, {
@@ -107,37 +125,10 @@ export function useBlockchainService(apiBaseUrl: string = import.meta.env.VITE_A
     }
   }
 
-  //   async function purchaseOrder(accessToekn:string,orderItem: OrderItem, successUrl: string, cancelUrl: string) {
-  //     const endpoint=new URL(orderEndpoint.toString()+"/checkout")
-
-  //     endpoint.searchParams.append("success_url",successUrl)
-  //     endpoint.searchParams.append("cancel_url",cancelUrl)
-  //     const response = await fetch(endpoint, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Authorization':`Bearer ${accessToekn}`,
-  //       },
-  //       body: JSON.stringify(orderItem.toOrderItemRequest()),
-  //     })
-
-  //     if (!response.ok) {
-  //       throw new Error(`Checkout API error: ${response.status} ${response.statusText}`)
-  //     }
-
-  //     const data= await response.json();
-  //     const checkoutUrl=data.url as string
-
-  //     return checkoutUrl
-  //   }
-
-  //   return {
-  //     getPurchasedOrders,
-  //     purchaseOrder,
-  //   }
   return {
     getCurrentBlock,
     getMiningLog,
-    listBlock
+    listBlock,
+    getBlock
   }
 }

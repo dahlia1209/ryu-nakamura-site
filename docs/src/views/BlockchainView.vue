@@ -54,6 +54,15 @@ const localStore = (() => {
     return date
   }
 
+  const updateBlockInfo=async (hash:string)=>{
+    const block = await blockchainService.getBlock(hash)
+    Object.assign(localStore.state.block.value, block)
+    const b = new Block(block)
+    localStore.state.target.value = b.bitsToTarget()
+    window.scrollTo({top: 0, behavior: 'smooth'})
+    return block
+  }
+
   return {
     state: {
       block,
@@ -69,7 +78,8 @@ const localStore = (() => {
     action: {
       hexToLittleEndian,
       truncateHash,
-      formattedTimestamp
+      formattedTimestamp,
+      updateBlockInfo
 
     },
   }
@@ -189,7 +199,11 @@ onMounted(async () => {
         <table v-for="(t, i) in localStore.state.block.value.transactions" :key="i" class="transaction-table">
           <tbody>
             <tr>
-              <th rowspan="5" class="transaction-index"># {{ i }}</th>
+              <th rowspan="6" class="transaction-index"># {{ i }}</th>
+              <th>txid</th>
+              <td>{{ t.txid }}</td>
+            </tr>
+            <tr>
               <th>Version</th>
               <td>{{ t.version }}</td>
             </tr>
@@ -242,11 +256,11 @@ onMounted(async () => {
                       </td>
                     </tr>
                     <tr>
-                      <th>scriptPubKey</th>
+                      <th>script<br>PubKey</th>
                       <td>{{ output.scriptPubkeyAsm }}</td>
                     </tr>
                     <tr>
-                      <th>scriptType</th>
+                      <th>Type</th>
                       <td>{{ output.scriptType }}</td>
                     </tr>
                   </tbody>
@@ -270,7 +284,10 @@ onMounted(async () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="block in localStore.state.blockList.value" :key="block.height!" :class="{'current-height':block.height==localStore.state.block.value.height}">
+            <tr v-for="block in localStore.state.blockList.value" :key="block.height!" 
+              :class="{'current-height':block.height==localStore.state.block.value.height}"
+              class="block-row"
+              @click="block.height==localStore.state.block.value.height?null: localStore.action.updateBlockInfo(block.hash)">
               <th class="hash-cell">
                 <code class="hash-value" >{{ block.height }}</code>
               </th>
@@ -307,7 +324,7 @@ onMounted(async () => {
 .blockchain-view {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 0.5rem 1rem;
   min-height: 100vh;
 }
 
@@ -410,7 +427,7 @@ onMounted(async () => {
 
 .block-table th {
   text-align: left;
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 1rem;
   font-weight: 600;
   color: var(--vp-c-green-2);
   background-color: var(--vp-c-gray-soft);
@@ -422,7 +439,7 @@ onMounted(async () => {
 }
 
 .block-table td {
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 1rem;
   font-size: 1rem;
 }
 
@@ -439,13 +456,10 @@ onMounted(async () => {
   transition: background-color 0.2s ease;
 }
 
-.transaction-table tbody tr:last-child {
-  border-bottom: none;
-}
 
 .transaction-table th {
   text-align: left;
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 1rem;
   font-weight: 600;
   color: var(--vp-c-green-2);
   background-color: var(--vp-c-gray-soft);
@@ -457,7 +471,7 @@ onMounted(async () => {
 }
 
 .transaction-table td {
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 1rem;
   font-size: 1rem;
   word-break: break-all;
   overflow-wrap: break-word;
@@ -508,12 +522,12 @@ onMounted(async () => {
   width: 1%;
   white-space: nowrap;
   font-size: 0.85rem;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
 }
 
 .nested-table td {
   font-size: 0.9rem;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
   word-break: break-all;
   overflow-wrap: break-word;
 }
@@ -598,7 +612,7 @@ onMounted(async () => {
 /* レスポンシブデザイン - スマートフォン */
 @media (max-width: 480px) {
   .blockchain-view {
-    padding: 1rem 0.75rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .page-title {
@@ -618,12 +632,12 @@ onMounted(async () => {
 
   .block-table th {
     width: 110px;
-    padding: 0.75rem 0.75rem;
+    padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
   }
 
   .block-table td {
-    padding: 0.75rem 0.75rem;
+    padding: 0.5rem 0.75rem;
     font-size: 0.85rem;
   }
 
@@ -649,7 +663,7 @@ onMounted(async () => {
 /* レスポンシブデザイン - スマートフォン */
 @media (max-width: 480px) {
   .blockchain-view {
-    padding: 1rem 0.75rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .page-title {
@@ -668,26 +682,26 @@ onMounted(async () => {
 
   .block-table th {
     width: 110px;
-    padding: 0.75rem 0.75rem;
+    padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
   }
 
   .block-table td {
-    padding: 0.75rem 0.75rem;
+    padding: 0.5rem 0.75rem;
     font-size: 0.85rem;
   }
 
   /* トランザクションテーブル - スマートフォン */
   .transaction-table th {
-    width: 90px;
-    padding: 0.625rem 0.5rem;
+    padding: 0.5rem 0.5rem;
     font-size: 0.75rem;
     width: 1%;
     white-space: nowrap;
+    border: 1px solid var(--vp-c-gray-soft);
   }
 
   .transaction-table td {
-    padding: 0.625rem 0.5rem;
+    padding: 0.5rem 0.5rem;
     font-size: 0.85rem;
   }
 
@@ -779,6 +793,17 @@ onMounted(async () => {
 
 .current-height{
   background-color: #fef9c3;
+}
+
+.block-row{
+  cursor: pointer;
+}
+.block-row:hover{
+  background-color: var(--vp-c-gray-soft);
+}
+
+.block-row.current-height:hover{
+  background-color: rgb(245, 232, 97);
 }
 
 /* レスポンシブデザイン - スマートフォン */

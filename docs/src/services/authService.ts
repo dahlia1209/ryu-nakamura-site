@@ -29,8 +29,8 @@ export function useAuthService() {
     },
     cache: {
       cacheLocation: 'localStorage',
-      storeAuthStateInCookie: false,
-      
+      storeAuthStateInCookie: true,
+
     },
     system: {
       loggerOptions: {
@@ -47,9 +47,13 @@ export function useAuthService() {
 
   async function login(path:string="/") {
     try {
+      // pathをsessionStorageに保存
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('redirectPath', path)
+      }
+
       const response = await msalInstance.loginRedirect({
         scopes:loginRequest.scopes,
-        redirectStartPage:`${import.meta.env.VITE_FRONT_URL}/authcallback?path=${path}`
       })
       return response
     } catch (error) {

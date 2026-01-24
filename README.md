@@ -42,7 +42,6 @@ az staticwebapp create -n $swa -g $rg --query "defaultHostname"
 
 #コードデプロイ
 swa build
-$rg="nakamura-rg"
 $swa="ryu-nakamura-swa"
 $token=az staticwebapp secrets list --name $swa --query "properties.apiKey" -o tsv
 #swa deploy -d $token #プレビュー

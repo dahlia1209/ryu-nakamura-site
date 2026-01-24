@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Headline } from '../models/page'
 import { useAuthStore } from '../stores/auth'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '../stores/user';
 import { useSiteStore } from '../stores/site';
 import { User } from '../models/user';
@@ -18,12 +18,18 @@ const localStore = (() => {
   /*state*/
   const isLoading = ref(false)
   const error = ref<string | null>(null);
+  let closeMenuTimer: number | null = null;
 
   /*getter*/
   const color = computed(() => authStore.isLoggedIn ? '#e74c3c' : '#06C755')
   const getAccountName=computed(()=> {
     if (!userStore.user) return "NoName"
     else return userStore.user.email.slice(0,2)
+  })
+  const getUserName=computed(()=> {
+    if (!userStore.user) return "ユーザー"
+    // メールアドレスの@より前の部分をユーザー名として使用
+    else return userStore.user.email.split('@')[0]
   })
 
   /*action*/
@@ -43,13 +49,48 @@ const localStore = (() => {
     }
   }
 
+  const handleSignupClick = async () => {
+    // 新規会員登録処理
+    isLoading.value = true
+    try {
+      const response = await authStore.authService.signup(route.path)
+    } catch (error) {
+      console.error('Signup failed:', error)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const handleAccountClick = async () => {
     if (authStore.isLoggedIn && authStore.userInfo) {
       // ログアウト処理
       await authStore.authService.logout(authStore.userInfo)
-    } 
+    }
   }
 
+  const handleMouseEnter = () => {
+    // タイマーがあればキャンセル
+    if (closeMenuTimer) {
+      clearTimeout(closeMenuTimer)
+      closeMenuTimer = null
+    }
+    siteStore.openAccountMenu()
+  }
+
+  const handleMouseLeave = () => {
+    // 200ms後にメニューを閉じる（マウス移動の猶予を与える）
+    closeMenuTimer = setTimeout(() => {
+      siteStore.closeAccountMenu()
+      closeMenuTimer = null
+    }, 200) as unknown as number
+  }
+
+  const cleanup = () => {
+    if (closeMenuTimer) {
+      clearTimeout(closeMenuTimer)
+      closeMenuTimer = null
+    }
+  }
 
   /*return */
   return {
@@ -58,16 +99,25 @@ const localStore = (() => {
     },
     getters: {
       color,
-      getAccountName
+      getAccountName,
+      getUserName
     },
     actions: {
       handleLoginClick,
+      handleSignupClick,
       handleAccountClick,
+      handleMouseEnter,
+      handleMouseLeave,
+      cleanup,
     }
   }
 })()
 
 onMounted(async ()=>{
+})
+
+onUnmounted(() => {
+  localStore.actions.cleanup()
 })
 
 </script>
@@ -84,6 +134,18 @@ onMounted(async ()=>{
         <li @click="siteStore.closeMenu(); " ><a href="/contents" class="header-menu">コンテンツ</a></li>
         <li @click="siteStore.closeMenu(); " ><a href="/about" class="header-menu">プロフィール</a></li>
         <li @click="siteStore.closeMenu(); " ><a href="/contact" class="header-menu">お問い合わせ</a></li>
+
+        <!-- モバイル用の認証ボタン -->
+        <li v-if="!authStore.isLoggedIn" class="mobile-auth-buttons">
+          <button @click="siteStore.closeMenu();localStore.actions.handleLoginClick()" class="mobile-login-button"
+            :disabled="localStore.state.isLoading.value">
+            ログイン
+          </button>
+          <button @click="siteStore.closeMenu();localStore.actions.handleSignupClick()" class="mobile-signup-button"
+            :disabled="localStore.state.isLoading.value">
+            新規会員登録
+          </button>
+        </li>
       </ul>
       <div class="burger" @click="siteStore.toggleMenu()"
         :class="{ 'toggle': siteStore.isMenuOpen }">
@@ -97,21 +159,65 @@ onMounted(async ()=>{
       <div v-if="siteStore.isLoading">
 
       </div>
-      <div v-else-if="authStore.isLoggedIn" class="account-container"  @click.stop="siteStore.toggleAccountMenu()">
-        <button  class="account-icon" 
+      <div v-else-if="authStore.isLoggedIn"
+        class="account-container"
+        @mouseenter="localStore.actions.handleMouseEnter()"
+        @mouseleave="localStore.actions.handleMouseLeave()">
+        <button  class="account-icon"
           :disabled="localStore.state.isLoading.value" >
           {{ localStore.getters.getAccountName.value.toUpperCase() }}
       </button>
-        <div class="dropdown-menu" v-if="siteStore.isAccountMenuOpen" >
-            <div class="menu-item" @click.stop="siteStore.closeMenu();router.go('/purchased')"><span class="icon"></span>購入記事</div>
-            <!-- <div class="menu-item"><span class="icon"></span>プロフィール編集</div> -->
-            <div class="menu-item" @click.stop="localStore.actions.handleAccountClick()"><span class="icon"></span>ログアウト</div>
+        <div class="dropdown-menu"
+          v-if="siteStore.isAccountMenuOpen"
+          @mouseenter="localStore.actions.handleMouseEnter()"
+          @mouseleave="localStore.actions.handleMouseLeave()">
+            <!-- User Profile Section -->
+            <div class="user-profile-section">
+              <div class="user-avatar">
+                {{ localStore.getters.getAccountName.value.toUpperCase() }}
+              </div>
+              <div class="user-details">
+                <div class="user-name">{{ localStore.getters.getUserName.value }}</div>
+                <div class="user-email">{{ userStore.user?.email || '' }}</div>
+              </div>
+            </div>
+
+            <!-- Main Menu Section -->
+            <div class="menu-section">
+              <div class="menu-item" @click="siteStore.closeAccountMenu();router.go('/purchased')">
+                <span class="icon">📚</span>購入したコンテンツ
+              </div>
+              <div class="menu-item" @click="siteStore.closeAccountMenu();router.go('/contents')">
+                <span class="icon">🔍</span>コンテンツを探す
+              </div>
+            </div>
+
+            <!-- Account Settings Section -->
+            <div class="menu-section">
+              <div class="menu-item" @click="siteStore.closeAccountMenu();router.go('/purchased')">
+                <span class="icon">💳</span>購入履歴
+              </div>
+            </div>
+
+            <!-- Support & Logout Section -->
+            <div class="menu-section">
+              <div class="menu-item" @click="siteStore.closeAccountMenu();router.go('/contact')">
+                <span class="icon">❓</span>ヘルプ・サポート
+              </div>
+              <div class="menu-item" @click="siteStore.closeAccountMenu();localStore.actions.handleAccountClick()">
+                <span class="icon">🚪</span>ログアウト
+              </div>
+            </div>
         </div>
       </div>
-      <div v-else class="login-container">
-        <button  @click="localStore.actions.handleLoginClick()" class="login-button"
+      <div v-else class="auth-buttons-container">
+        <button @click="localStore.actions.handleLoginClick()" class="login-button"
           :disabled="localStore.state.isLoading.value">
           ログイン
+        </button>
+        <button @click="localStore.actions.handleSignupClick()" class="signup-button"
+          :disabled="localStore.state.isLoading.value">
+          新規会員登録
         </button>
       </div>
     </div>
@@ -161,16 +267,82 @@ onMounted(async ()=>{
 }
 
 
-/* Login button styles */
-.login-button {
-  color: white;
-  border-radius: 30px;
-  padding: 6px 15px;
+/* Auth buttons container */
+.auth-buttons-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* モバイル用認証ボタン（デフォルトでは非表示） */
+.mobile-auth-buttons {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 20px 0;
+  margin-top: 20px;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+/* モバイル用ログインボタン */
+.mobile-login-button {
+  width: 100%;
+  color: var(--vp-c-text-1);
+  border-radius: 4px;
+  padding: 12px 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 0;
-  white-space: nowrap;
+  transition: background-color 0.2s ease;
+  border: 1px solid var(--vp-c-divider);
+  background-color: transparent;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.mobile-login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mobile-login-button:hover:not(:disabled) {
+  background-color: var(--vp-c-bg-soft);
+}
+
+/* モバイル用新規会員登録ボタン */
+.mobile-signup-button {
+  width: 100%;
+  color: white;
+  border-radius: 4px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid var(--vp-c-bg-green);
   background-color: var(--vp-c-bg-green);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.mobile-signup-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mobile-signup-button:hover:not(:disabled) {
+  background-color: #05b048;
+}
+
+/* Login button styles (Udemy-inspired) */
+.login-button {
+  color: var(--vp-c-text-1);
+  border-radius: 4px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid var(--vp-c-divider);
+  white-space: nowrap;
+  background-color: transparent;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .login-button:disabled {
@@ -179,7 +351,30 @@ onMounted(async ()=>{
 }
 
 .login-button:hover:not(:disabled) {
-  opacity: 0.8;
+  background-color: var(--vp-c-bg-soft);
+}
+
+/* Signup button styles (Udemy-inspired) */
+.signup-button {
+  color: white;
+  border-radius: 4px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid var(--vp-c-bg-green);
+  white-space: nowrap;
+  background-color: var(--vp-c-bg-green);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.signup-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.signup-button:hover:not(:disabled) {
+  background-color: #05b048;
 }
 
 .user_icon {
@@ -256,7 +451,6 @@ onMounted(async ()=>{
     color: var(--vp-c-green-3);
   }
 
-
   .burger {
     display: block;
   }
@@ -266,6 +460,45 @@ onMounted(async ()=>{
     visibility: visible;
   }
 
+  /* モバイルでヘッダー右側の認証ボタンを非表示 */
+  .header-right .auth-buttons-container {
+    display: none;
+  }
+
+  /* モバイルでハンバーガーメニュー内の認証ボタンを表示 */
+  .mobile-auth-buttons {
+    display: flex;
+    width: 90%;
+  }
+
+  /* モバイルでのドロップダウンメニュー調整 */
+  .dropdown-menu {
+    width: 260px;
+    max-width: calc(100vw - 32px);
+  }
+
+  .user-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
+
+  .user-name {
+    font-size: 14px;
+  }
+
+  .user-email {
+    font-size: 11px;
+  }
+
+  .menu-item {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  /* 480px以下では特に追加の調整は不要（768pxのメディアクエリが適用される） */
 }
 
 .toggle .line1 {
@@ -314,22 +547,115 @@ onMounted(async ()=>{
   top: 130%;
   right: 0;
   background-color: var(--vp-c-bg);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
-  width: 200px;
+  width: 280px;
+  overflow: hidden;
+  z-index: 1000;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* メニュー表示時のアニメーション */
+.dropdown-menu {
+  animation: fadeInDown 0.2s ease;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* User Profile Section */
+.user-profile-section {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+  background-color: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.user-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: var(--vp-c-green-3);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.user-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 16px;
+  color: var(--vp-c-text-1);
+  font-weight: 700;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-email {
+  font-size: 12px;
+  color: var(--vp-c-text-2);
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Menu Sections */
+.menu-section {
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.menu-section:last-child {
+  border-bottom: none;
 }
 
 .menu-item {
   display: flex;
-  padding: 10px;
+  padding: 12px 16px;
   align-items: center;
-  color: var(--vp-c-green-1);
+  gap: 12px;
+  color: var(--vp-c-text-1);
   transition: background-color 0.2s;
   cursor: pointer;
+  font-size: 14px;
+}
+
+.menu-item .icon {
+  font-size: 18px;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .menu-item:hover {
-  background-color: var(--vp-c-gray-3);
+  background-color: var(--vp-c-bg-soft);
+}
+
+.menu-item:active {
+  background-color: var(--vp-c-divider);
 }
 
 </style>

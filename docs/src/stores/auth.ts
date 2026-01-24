@@ -28,6 +28,10 @@ export const useAuthStore = defineStore('auth', {
     },
     async checkAuthStatus() {
       try {
+        // MSALを初期化してリダイレクト結果を処理
+        await this.authService.initialize()
+
+        // 認証済みの場合、トークンを取得
         const auth=await this.authService.acquireTokenSilent()
         this.updateAuthStatus(auth)
       } catch (error) {
@@ -35,7 +39,7 @@ export const useAuthStore = defineStore('auth', {
       }
 
     },
-    
+
   }
 
   

@@ -16,7 +16,12 @@ export const useSiteStore = defineStore('site', {
       toggleAccountMenu() {
         this.isAccountMenuOpen = !this.isAccountMenuOpen
       },
-      closeAccountMenu() { this.isAccountMenuOpen = false},
+      openAccountMenu() {
+        this.isAccountMenuOpen = true
+      },
+      closeAccountMenu() {
+        this.isAccountMenuOpen = false
+      },
       toggleMenu() {
         this.isMenuOpen = !this.isMenuOpen
       },

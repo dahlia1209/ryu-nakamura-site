@@ -23,6 +23,8 @@ export class User {
         accountInfo.idTokenClaims.oid,
         accountInfo.idTokenClaims.idp ?? 'local',
         accountInfo.idTokenClaims.email as string,
+        new Date(),
+        new Date()
       )
   }
 
@@ -40,8 +42,8 @@ export class User {
   }
 
   toUserRequest(){
-    const created_at=this.createdAt==null?this.createdAt:this.createdAt.toISOString()
-    const last_login=this.lastLogin==null?this.lastLogin:this.lastLogin.toISOString() 
+    const created_at=this.createdAt ? this.createdAt.toISOString() : undefined
+    const last_login=this.lastLogin ? this.lastLogin.toISOString() : undefined
 
     return {
       id:this.id,

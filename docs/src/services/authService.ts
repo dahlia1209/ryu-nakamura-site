@@ -54,10 +54,31 @@ export function useAuthService() {
 
       const response = await msalInstance.loginRedirect({
         scopes:loginRequest.scopes,
+        redirectStartPage:`${import.meta.env.VITE_FRONT_URL}/authcallback?path=${path}`,
+        prompt: 'login',
       })
       return response
     } catch (error) {
       console.error('Login error:', error)
+      throw error
+    }
+  }
+
+  async function signup(path:string="/") {
+    try {
+      // pathをsessionStorageに保存
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('redirectPath', path)
+      }
+
+      const response = await msalInstance.loginRedirect({
+        scopes:loginRequest.scopes,
+        redirectStartPage:`${import.meta.env.VITE_FRONT_URL}/authcallback?path=${path}`,
+        prompt: 'create',
+      })
+      return response
+    } catch (error) {
+      console.error('Signup error:', error)
       throw error
     }
   }
@@ -134,6 +155,7 @@ export function useAuthService() {
 
   return {
     login,
+    signup,
     logout,
     getAccount,
     acquireTokenSilent,

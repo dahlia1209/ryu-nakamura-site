@@ -54,7 +54,7 @@ import { Headline } from '../models/page'
         <h3>6. お問い合わせ</h3>
         <p>当サイトの個人情報の取り扱いに関するお問い合わせは、下記までご連絡ください。</p>
         <div class="contact-info">
-          <p>中村システムエンジニアリング事業所</p>
+          <p>RyuTech</p>
           <p>メールアドレス: <a href="mailto:dahlia1209@gmail.com">dahlia1209@gmail.com</a></p>
         </div>
       </section>

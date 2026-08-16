@@ -41,11 +41,11 @@ az group create --name $rg --location $location --tags "yyyyMMddHHmm=$yyyyMMddHH
 az staticwebapp create -n $swa -g $rg --query "defaultHostname"
 
 #コードデプロイ
-swa build
-$swa="ryu-nakamura-swa"
-$token=az staticwebapp secrets list --name $swa --query "properties.apiKey" -o tsv
-#swa deploy -d $token #プレビュー
-swa deploy -d $token --env production #商用
+npx swa build
+SWA="ryu-nakamura-swa"
+TOKEN=$(az staticwebapp secrets list --name $SWA --query "properties.apiKey" -o tsv)
+# swa deploy -d $TOKEN  # プレビュー
+npx swa deploy -d $TOKEN --env production  # 商用
 
 ```
 

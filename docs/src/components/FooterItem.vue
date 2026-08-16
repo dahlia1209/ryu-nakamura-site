@@ -14,7 +14,7 @@ const currentYear = new Date().getFullYear()
         <a href="/contact">お問い合わせ</a>
       </div>
       <div class="copyright">
-        &copy; {{ currentYear }} 中村システムエンジニアリング事業所. All Rights Reserved.
+        &copy; {{ currentYear }} RyuTech. All Rights Reserved.
       </div>
     </div>
   </footer>

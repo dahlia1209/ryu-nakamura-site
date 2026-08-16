@@ -16,7 +16,7 @@
             </tr>
             <tr>
                 <th>屋号</th>
-                <td>中村システムエンジニアリング事業所</td>
+                <td>RyuTech</td>
             </tr>
             <tr>
                 <th>業種</th>

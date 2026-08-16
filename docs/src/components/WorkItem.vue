@@ -27,8 +27,9 @@ const props = defineProps<{
     </div>
     
     <div class="work-content">
+      <span class="free-badge">無料</span>
       <h3>{{ project.title }}</h3>
-      
+
       <p class="description">{{ project.description }}</p>
       
       <div class="tech-stack">
@@ -86,6 +87,18 @@ const props = defineProps<{
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+}
+
+.free-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2f6fb0;
+  background-color: #e5eef8;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
 }
 
 h3 {

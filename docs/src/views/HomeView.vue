@@ -4,250 +4,208 @@ import { Headline } from '../models/page'
 import { useContentStore } from '../stores/content';
 import WorkItem from '../components/WorkItem.vue'
 import ContentItem from '../components/ContentItem.vue';
-import { ref, useTemplateRef, onMounted, watchEffect, computed } from 'vue'
-import { useRouter, useRoute } from 'vitepress'
 import { data } from '../data/contents.data'
-
+import { getMergedUpdates } from '../data/updates'
+import type { UpdateType } from '../models/update'
 
 const contentStore = useContentStore();
-const route = useRoute()
 
-const localStore = (() => {
-  /* state */
-  const headlines = ref<Headline[]>([])
-  const leftBtn1 = useTemplateRef<HTMLButtonElement>("left-button1")
-  const rightBtn1 = useTemplateRef<HTMLButtonElement>("right-button1")
-  const contentGrid1 = useTemplateRef<HTMLButtonElement>("content-grid1")
-  const leftBtn2 = useTemplateRef<HTMLButtonElement>("left-button2")
-  const rightBtn2 = useTemplateRef<HTMLButtonElement>("right-button2")
-  const contentGrid2 = useTemplateRef<HTMLButtonElement>("content-grid2")
-  const leftBtn3 = useTemplateRef<HTMLButtonElement>("left-button3")
-  const rightBtn3 = useTemplateRef<HTMLButtonElement>("right-button3")
-  const contentGrid3 = useTemplateRef<HTMLButtonElement>("content-grid3")
+const recentUpdates = getMergedUpdates().slice(0, 5)
+const recentApps = contentStore.workItems.slice(0, 3)
+const recentContents = data.contents.slice(0, 3)
 
-  /* getter */
+const typeLabel: Record<UpdateType, string> = {
+  article: '記事',
+  app: 'アプリ',
+  notice: 'お知らせ',
+}
 
-
-  /* action */
-  const pushHeadline = (elem: Headline) => {
-    headlines.value.push(elem)
-  }
-
-  const calculateAge = (birthDate: string) => {
-    const today: Date = new Date();
-    const birth: Date = new Date(birthDate);
-    let age: number = today.getFullYear() - birth.getFullYear();
-    const monthDiff: number = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    return age;
-  }
-
-  const updateButtons = (leftBtn: HTMLButtonElement | null, rightBtn: HTMLButtonElement | null, btnContainer: HTMLElement | null) => {
-    if (leftBtn && rightBtn && btnContainer) {
-      const isAtStart = btnContainer.scrollLeft <= 0;
-      const isAtEnd = btnContainer.scrollLeft >= btnContainer.scrollWidth - btnContainer.clientWidth - 10;
-      leftBtn.disabled = isAtStart;
-      rightBtn.disabled = isAtEnd;
-    }
-  }
-
-  const scrollContents = (leftBtn: HTMLButtonElement | null, rightBtn: HTMLButtonElement | null, btnContainer: HTMLElement | null, scrollAmount: number) => {
-    if (leftBtn && rightBtn && btnContainer) {
-      btnContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-      updateButtons(leftBtn, rightBtn, btnContainer)
-    }
-  }
-
-  const formatLastUpdated = (date: Date | null): string => {
-    if (!date) return ''
-    return date.toLocaleString('ja-JP', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    })
-  }
-
-  //返り値
-  return {
-    state: {
-      headlines,
-      leftBtn1,
-      rightBtn1,
-      contentGrid1,
-      leftBtn2,
-      rightBtn2,
-      contentGrid2,
-      leftBtn3,
-      rightBtn3,
-      contentGrid3,
-
-    },
-    getter: {
-
-    },
-    action: {
-      calculateAge,
-      pushHeadline,
-      updateButtons,
-      scrollContents,
-      formatLastUpdated,
-    },
-  }
-})()
-
-onMounted(async () => {
-  localStore.action.updateButtons(localStore.state.leftBtn1.value, localStore.state.rightBtn1.value, localStore.state.contentGrid1.value)
-  localStore.action.updateButtons(localStore.state.leftBtn2.value, localStore.state.rightBtn2.value, localStore.state.contentGrid2.value)
-  localStore.action.updateButtons(localStore.state.leftBtn3.value, localStore.state.rightBtn3.value, localStore.state.contentGrid3.value)
-})
-
+function formatDate(dateStr: string): string {
+  return new Intl.DateTimeFormat('ja-JP', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date(dateStr))
+}
 </script>
 
 <template>
   <div class="home">
-    <HomeHeadline :headline="new Headline('purpose', 'デジタルコンテンツ','h1')" @input-by="localStore.action.pushHeadline" />
-    
-    <div class="description">
-      <p>現在公開中のコンテンツ一覧です。</p>
-      <div class="content-grid-container scroll-btn-container">
-        <button class="scroll-btn scroll-left" ref="left-button1"
-          @click="localStore.action.scrollContents(localStore.state.leftBtn1.value, localStore.state.rightBtn1.value, localStore.state.contentGrid1.value, -320)">‹</button>
-        <button class="scroll-btn scroll-right" ref="right-button1"
-          @click="localStore.action.scrollContents(localStore.state.leftBtn1.value, localStore.state.rightBtn1.value, localStore.state.contentGrid1.value, 320)">›</button>
-        <div class="content-grid" ref="content-grid1"
-          @scroll="localStore.action.updateButtons(localStore.state.leftBtn1.value, localStore.state.rightBtn1.value, localStore.state.contentGrid1.value)">
-          <ContentItem v-for="content in data.contents" :key="content.title_no" :content="content"
-            class="content-item" />
-        </div>
+    <HomeHeadline :headline="new Headline('purpose', 'Webアプリと技術記事', 'h1')" />
+    <p class="hero-lede">
+      個人開発したWebアプリを無料で公開しているほか、プログラミングやクラウド技術に関する記事コンテンツを購入制で提供しています。
+    </p>
+
+    <section class="section">
+      <HomeHeadline :headline="new Headline('updates', '更新情報')" />
+      <ul class="updates-list">
+        <li v-for="(update, index) in recentUpdates" :key="index" class="update-row">
+          <span class="update-date">{{ formatDate(update.date) }}</span>
+          <span class="type-badge" :class="update.type">{{ typeLabel[update.type] }}</span>
+          <a v-if="update.link" :href="update.link" class="update-title">{{ update.title }}</a>
+          <span v-else class="update-title">{{ update.title }}</span>
+        </li>
+      </ul>
+      <a href="/updates" class="more-link">更新情報をすべて見る &rarr;</a>
+    </section>
+
+    <section class="section">
+      <HomeHeadline :headline="new Headline('apps', 'アプリ')" />
+      <p class="section-lede">無料で使えるWebアプリです。</p>
+      <div class="apps-grid">
+        <WorkItem v-for="item in recentApps" :key="item.id" :project="item" />
       </div>
-      <HomeHeadline :headline="new Headline('purpose', 'アプリケーション','h2')" @input-by="localStore.action.pushHeadline" />
-      <p>現在公開中のアプリケーションです。</p>
-      <div class="works-grid">
-        <WorkItem v-for="item in contentStore.workItems" :key="item.id" :project="item" />
+      <a href="/apps" class="more-link">アプリ一覧を見る &rarr;</a>
+    </section>
+
+    <section class="section">
+      <HomeHeadline :headline="new Headline('contents', '記事')" />
+      <p class="section-lede">購入制の技術記事です。</p>
+      <div class="contents-grid">
+        <ContentItem v-for="content in recentContents" :key="content.title_no" :content="content" />
       </div>
+      <a href="/contents" class="more-link">記事一覧を見る &rarr;</a>
+    </section>
 
-
-    </div>
-
-
-
+    <section class="section cta-section">
+      <p>個人事業主として、Webアプリケーション開発や技術コンサルティングのご相談を承っています。</p>
+      <div class="cta-links">
+        <a href="/about" class="cta-link">プロフィールを見る</a>
+        <a href="/contact" class="cta-link cta-link-primary">お問い合わせ</a>
+      </div>
+    </section>
   </div>
 </template>
 
 <style scoped>
 .home {
+  display: flex;
   flex-direction: column;
   padding: 0 30px;
   margin-bottom: 30px;
 }
 
-table {
-  border-collapse: collapse;
-  width: 100%;
+.hero-lede {
+  color: var(--color-text);
+  max-width: 60ch;
+  margin: 0 0 10px;
 }
 
-caption {
-  font-weight: bold;
-  font-size: 1.2em;
-  margin-bottom: 10px;
+.section {
+  margin-top: 40px;
 }
 
-thead {
-  background-color: #333;
+.section-lede {
+  margin: 0 0 10px;
+}
+
+.more-link {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--vp-c-green-3);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.more-link:hover {
+  opacity: 0.75;
+}
+
+.apps-grid,
+.contents-grid {
+  display: grid;
+  gap: 25px;
+  margin-top: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.updates-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.update-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  flex-wrap: wrap;
+}
+
+.update-date {
+  color: #888;
+  font-size: 0.85rem;
+  min-width: 110px;
+}
+
+.type-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.type-badge.article {
+  background-color: #f5ecd9;
+  color: #a8752c;
+}
+
+.type-badge.app {
+  background-color: #e5eef8;
+  color: #2f6fb0;
+}
+
+.type-badge.notice {
+  background-color: #e3efe8;
+  color: var(--vp-c-green-3);
+}
+
+.update-title {
+  color: var(--color-heading);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a.update-title:hover {
+  color: var(--vp-c-green-3);
+}
+
+.cta-section {
+  padding-top: 30px;
+  border-top: 1px solid #eee;
+}
+
+.cta-links {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.cta-link {
+  padding: 10px 20px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid var(--vp-c-green-3);
+  color: var(--vp-c-green-3);
+}
+
+.cta-link-primary {
+  background-color: var(--vp-c-green-3);
   color: white;
 }
 
-tfoot {
-  background-color: #f2f2f2;
-  font-weight: bold;
+.cta-link:hover {
+  opacity: 0.85;
 }
 
-th,
-td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-.works-grid {
-  display: grid;
-  gap: 30px;
-  margin-top: 20px;
-  padding-bottom: 40px;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  margin-bottom: 50px;
-}
-
-.content-grid {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 300px;
-  gap: 25px;
-  margin-bottom: 50px;
-  overflow-x: auto;
-}
-
-.scroll-btn-container {
-  position: relative;
-}
-
-.scroll-btn {
-  position: absolute;
-  top: 30%;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  color: #333;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-  z-index: 10;
-}
-
-.scroll-left {
-  left: 10px;
-}
-
-.scroll-right {
-  right: 10px;
-}
-
-.scroll-btn:hover {
-  background: white;
-  transform: translateY(-10%) scale(1.1);
-}
-
-.scroll-btn:disabled {
-  opacity: 0;
-  cursor: not-allowed;
-  transform: translateY(-10%) scale(0.9);
-}
-
-.last-updated {
-  margin-bottom: 30px;
-  color: #888;
-  font-size: 0.9em;
-  font-style: italic;
-}
-
-.youtube-description-container,
-.x-description-container {
-  display: flex;
-  flex-direction: column;
+@media (max-width: 640px) {
+  .update-date {
+    min-width: auto;
+  }
 }
 </style>

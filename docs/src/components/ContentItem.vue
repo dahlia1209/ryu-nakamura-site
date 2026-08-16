@@ -52,6 +52,7 @@ function formatPrice(price: number): string {
       </div>
       
       <div class="price-section">
+        <span class="paid-badge">有料</span>
         <div class="price">{{ formatPrice(content.price) }}</div>
       </div>
       
@@ -177,6 +178,15 @@ h3 {
   font-size: 1.4rem;
   font-weight: 600;
   color: #2D3E50;
+}
+
+.paid-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #a8752c;
+  background-color: #f5ecd9;
+  padding: 2px 8px;
+  border-radius: 999px;
 }
 
 .action-buttons {

@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import HomeHeadline from '../components/HomeHeadline.vue'
-import WorkItem from '../components/WorkItem.vue'
 import { Headline } from '../models/page'
-import { useContentStore } from '../stores/content';
 import ContentItem from '../components/ContentItem.vue';
 import { data } from '../data/contents.data'
-
-const contentStore = useContentStore();
 
 </script>
 
@@ -14,18 +10,10 @@ const contentStore = useContentStore();
   <div class="works-container">
     <HomeHeadline :headline="new Headline('contents', 'コンテンツ一覧')" />
     <div class="intro-text">
-      <p>現在公開中の記事コンテンツを紹介します。</p>
+      <p>現在公開中の記事コンテンツを紹介します。購入すると全文をお読みいただけます。</p>
     </div>
     <div class="content-grid">
       <ContentItem v-for="content in data.contents" :key="content.title_no" :content="content" />
-    </div>
-
-    <HomeHeadline :headline="new Headline('my-works', '制作アプリ一覧')" />
-    <div class="works-description">
-      これまでに個人で開発してきたアプリを紹介します。
-    </div>
-    <div class="works-grid">
-      <WorkItem v-for="item in contentStore.workItems" :key="item.id" :project="item" />
     </div>
   </div>
 
@@ -37,17 +25,6 @@ const contentStore = useContentStore();
   flex-direction: column;
   padding: 0 30px;
 
-}
-
-.works-description {
-}
-
-.works-grid {
-  display: grid;
-  gap: 30px;
-  margin-top: 20px;
-  padding-bottom: 40px;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
 .column-view {
@@ -97,10 +74,4 @@ const contentStore = useContentStore();
   margin-bottom: 50px;
 }
 
-
-@media (max-width: 768px) {
-  .works-grid {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

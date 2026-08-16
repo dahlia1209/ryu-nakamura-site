@@ -9,6 +9,7 @@ export function useBlockchainService(apiBaseUrl: string = import.meta.env.VITE_A
     const endpoint = new URL(blockchainEndpoint + '/block/current')
     const response = await fetch(endpoint, {
       method: 'GET',
+      cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -27,6 +28,7 @@ export function useBlockchainService(apiBaseUrl: string = import.meta.env.VITE_A
     const endpoint = new URL(blockchainEndpoint + `/block?hash=${hash}`)
     const response = await fetch(endpoint, {
       method: 'GET',
+      cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -45,6 +47,7 @@ export function useBlockchainService(apiBaseUrl: string = import.meta.env.VITE_A
     const endpoint = new URL(blockchainEndpoint + '/block/list')
     const response = await fetch(endpoint, {
       method: 'GET',
+      cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -63,7 +66,7 @@ export function useBlockchainService(apiBaseUrl: string = import.meta.env.VITE_A
     const blobUrl = `https://nakamurast20250505.blob.core.windows.net/root/mining-logs/mining.log`
     try {
         // 1. まずHEADリクエストでファイルサイズを取得
-        const headResponse = await fetch(blobUrl, { method: 'HEAD' });
+        const headResponse = await fetch(blobUrl, { method: 'HEAD', cache: 'no-store' });
         if (!headResponse.ok) {
             throw new Error(`Failed to fetch blob info: ${headResponse.status}`);
         }
@@ -93,6 +96,7 @@ export function useBlockchainService(apiBaseUrl: string = import.meta.env.VITE_A
         
         // 3. Rangeリクエストで末尾部分を取得
         const response = await fetch(blobUrl, {
+            cache: 'no-store',
             headers: {
                 'Range': `bytes=${rangeStart}-${rangeEnd}`
             }

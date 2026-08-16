@@ -279,6 +279,15 @@ watch(() => userStore.user, async (newX) => {
       </div>
       <div class="remaining_text_length">残り {{ localStore.getters.content.value!.remaining_text_length }} 字</div>
 
+      <div v-if="localStore.getters.content.value!.note_url" class="note-warning">
+        <div class="warning-icon">📝</div>
+        <div class="warning-content">
+          <div class="warning-title">noteでも続きをお読みいただけます</div>
+          <p>本サイトでの購入のほか、noteでも同じ記事の続きをご購入いただけます。</p>
+          <a :href="localStore.getters.content.value!.note_url" target="_blank" class="note-link">noteで読む</a>
+        </div>
+      </div>
+
       <div class="simplified-checkout">
         <div class="payment-method-section">
           <div class="checkout-price-section">

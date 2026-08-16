@@ -1,19 +1,17 @@
 import { defineConfig, PageData, loadEnv } from 'vitepress'
 import { load } from '../src/data/contents.data'
 
+const DEFAULT_OG_IMAGE = 'https://nakamurast20250505.blob.core.windows.net/root/content-image/ogp-logo.png'
+const HOME_OG_TITLE = 'Webサイト・デジタルコンテンツ制作 | Ryu Nakamura'
+const HOME_OG_DESCRIPTION = '個人開発アプリとデジタルコンテンツを提供。Vue.js/TypeScript製のWebアプリケーション、ブロックチェーンシミュレーター、技術記事を公開。RyuTech。'
+
 export default defineConfig({
   title: 'Ryu Nakamura',
-  description: '個人開発アプリとデジタルコンテンツを提供。Vue.js/TypeScript製のWebアプリケーション、ブロックチェーンシミュレーター、技術記事を公開。RyuTech。',
+  description: HOME_OG_DESCRIPTION,
   head: [
     ['link', { rel: 'icon', href: '/home.svg' }],
-    ['meta', { property: 'og:title', content: 'Webサイト・デジタルコンテンツ制作 | Ryu Nakamura' }],
-    ['meta',{property: 'og:description',content:'個人開発アプリとデジタルコンテンツを提供。Vue.js/TypeScript製のWebアプリケーション、ブロックチェーンシミュレーター、技術記事を公開。RyuTech。',},],
-    ['meta',{property: 'og:image',content: 'https://nakamurast20250505.blob.core.windows.net/root/content-image/ogp-logo.png',},],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'twitter:card', content: 'summary' }],
-    ['meta',{ property: 'twitter:title', content: 'Webサイト・デジタルコンテンツ制作 | Ryu Nakamura' }],
-    ['meta',{property: 'twitter:description',content:'個人開発アプリとデジタルコンテンツを提供。Vue.js/TypeScript製のWebアプリケーション、ブロックチェーンシミュレーター、技術記事を公開。RyuTech。',},],
-    ['meta',{property: 'twitter:image',content: 'https://nakamurast20250505.blob.core.windows.net/root/content-image/ogp-logo.png',},],
     ['meta', { property: 'twitter:site', content: '@RyuNakamura' }],
     ['meta', { property: 'twitter:creator', content: '@RyuNakamura' }],
   ],
@@ -41,11 +39,26 @@ export default defineConfig({
 
     const updatePageUrl = (pageData: PageData) => {
       const BASE_URL = 'https://www.ryu-nakamura.com'
-      const path = pageData.relativePath.replace(/\.md$/, '.html').replace(/^index\.html$/, '')
+      const path = pageData.relativePath.replace(/\.md$/, '').replace(/^index$/, '')
       const pageUrl = `${BASE_URL}/${path}`
       pageData.frontmatter.head ??= []
       pageData.frontmatter.head.push(['link', { rel: 'canonical', href: pageUrl }])
       pageData.frontmatter.head.push(['meta', { property: 'og:url', content: pageUrl }])
+    }
+
+    // contents/配下は updateContentsMeta が個別にog:title等を設定するため対象外
+    const updateGenericMeta = (pageData: PageData) => {
+      if (pageData.relativePath.startsWith('contents/')) return
+      const isHome = pageData.relativePath === 'index.md'
+      const ogTitle = isHome ? HOME_OG_TITLE : `${pageData.title} | Ryu Nakamura`
+      const ogDescription = isHome ? HOME_OG_DESCRIPTION : pageData.description
+      pageData.frontmatter.head ??= []
+      pageData.frontmatter.head.push(['meta', { property: 'og:title', content: ogTitle }])
+      pageData.frontmatter.head.push(['meta', { property: 'og:description', content: ogDescription }])
+      pageData.frontmatter.head.push(['meta', { property: 'og:image', content: DEFAULT_OG_IMAGE }])
+      pageData.frontmatter.head.push(['meta', { property: 'twitter:title', content: ogTitle }])
+      pageData.frontmatter.head.push(['meta', { property: 'twitter:description', content: ogDescription }])
+      pageData.frontmatter.head.push(['meta', { property: 'twitter:image', content: DEFAULT_OG_IMAGE }])
     }
 
     const updateHeader = (pageData: PageData) => {
@@ -71,6 +84,7 @@ export default defineConfig({
 
     //メイン処理
     await updateContentsMeta(pageData)
+    updateGenericMeta(pageData)
     updatePageUrl(pageData)
     if (process.env.NODE_ENV == 'production') updateHeader(pageData)
     return pageData

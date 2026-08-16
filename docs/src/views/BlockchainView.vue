@@ -87,17 +87,19 @@ const localStore = (() => {
 
 onMounted(async () => {
   try {
-    //現在のブロック取得
-    const currentBlock = await blockchainService.getCurrentBlock()
+    //現在のブロック・マイニングログ・ブロック一覧を並列取得
+    const [currentBlock, miningLog, allBlocks] = await Promise.all([
+      blockchainService.getCurrentBlock(),
+      blockchainService.getMiningLog(),
+      blockchainService.listBlock(),
+    ])
+
     Object.assign(localStore.state.block.value, currentBlock)
     const b = new Block(currentBlock)
     localStore.state.target.value = b.bitsToTarget()
 
-    //マイニングログ取得
-    localStore.state.miningLog.value = (await blockchainService.getMiningLog()).slice(0, 10);
+    localStore.state.miningLog.value = miningLog.slice(0, 10)
 
-    //ブロック一覧取得
-    const allBlocks = await blockchainService.listBlock()
     localStore.state.blockList.value = allBlocks
       .sort((a, b) => (b.height ?? 0) - (a.height ?? 0))
       .slice(0, 20)

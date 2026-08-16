@@ -22,7 +22,7 @@ export const workData = [
           id: 3,
           title: 'ブロックチェーンエクスプローラー',
           description: '本サイトオリジナルブロックチェーンの最新ブロック情報を表示。ブロックハッシュ、トランザクション詳細、マイニング状況をリアルタイムで確認できます。',
-          imageUrl: '/blockchain_logo.svg',
+          imageUrl: '/bitcoin.jpg',
           techStack: ['Vue.js', 'TypeScript'],
           projectUrl: '/blockchain',
         } as WorkItem,

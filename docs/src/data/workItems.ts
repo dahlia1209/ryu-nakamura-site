@@ -18,4 +18,12 @@ export const workData = [
           techStack: ['Vue.js', 'TypeScript'],
           projectUrl: '/blockchain_simulator',
         } as WorkItem,
+        {
+          id: 3,
+          title: 'ブロックチェーンエクスプローラー',
+          description: '本サイトオリジナルブロックチェーンの最新ブロック情報を表示。ブロックハッシュ、トランザクション詳細、マイニング状況をリアルタイムで確認できます。',
+          imageUrl: '/blockchain_logo.svg',
+          techStack: ['Vue.js', 'TypeScript'],
+          projectUrl: '/blockchain',
+        } as WorkItem,
       ]

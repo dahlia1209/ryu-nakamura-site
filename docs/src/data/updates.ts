@@ -3,13 +3,6 @@ import { data } from './contents.data'
 
 export const updateData: UpdateItem[] = [
   new UpdateItem(
-    '2026-08-30',
-    'notice',
-    'note記事「#18 ストア哲学とマルクスアウレリウス Part1」を公開しました',
-    'ローマ皇帝マルクス・アウレリウスが実践したストア哲学の思想背景を、西洋哲学史を辿りながら解説しています。',
-    'https://note.com/kenjinishizaki/n/ne8865a1da053',
-  ),
-  new UpdateItem(
     '2026-08-16',
     'notice',
     '屋号を「RyuTech」に変更しました',

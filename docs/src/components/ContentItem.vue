@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Content,PreviewContent } from '../models/content';
 import { withBase, useData,useRouter } from 'vitepress'
+import { data } from '../data/contents.data'
 
 const { theme } = useData()
 const router=useRouter()
@@ -8,6 +10,13 @@ const router=useRouter()
 const props = defineProps<{
   content: PreviewContent
 }>();
+
+// 管理者がアプリ内限定で無料公開指定した記事、または常に最新記事は、購入不要で読める
+const isReadableForFree = computed(() => {
+  if (props.content.is_app_free) return true;
+  const maxTitleNo = Math.max(...data.contents.map(c => c.title_no));
+  return props.content.title_no === maxTitleNo;
+});
 
 // Format date to human-readable
 function formatDate(date: Date): string {
@@ -52,8 +61,11 @@ function formatPrice(price: number): string {
       </div>
       
       <div class="price-section">
-        <span class="paid-badge">有料</span>
-        <div class="price">{{ formatPrice(content.price) }}</div>
+        <span v-if="isReadableForFree" class="free-badge">無料</span>
+        <template v-else>
+          <span class="paid-badge">有料</span>
+          <div class="price">{{ formatPrice(content.price) }}</div>
+        </template>
       </div>
       
       <div class="action-buttons">
@@ -185,6 +197,15 @@ h3 {
   font-weight: 600;
   color: #a8752c;
   background-color: #f5ecd9;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.free-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2563eb;
+  background-color: #dbeafe;
   padding: 2px 8px;
   border-radius: 999px;
 }

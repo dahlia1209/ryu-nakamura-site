@@ -125,6 +125,7 @@ onUnmounted(() => {
 <template>
   <div class="wrapper">
     <a href="/" class="logo" @click="siteStore.closeMenu();">
+      <img src="/favicon.png" alt="" class="logo-icon" />
       Ryu Nakamura
     </a>
 
@@ -239,11 +240,21 @@ onUnmounted(() => {
 
 /* Logo styling */
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 1.5rem;
   font-weight: 700;
   text-decoration: none;
   color: var(--vp-c-green-3);
   cursor: pointer;
+}
+
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 /* Header right section */

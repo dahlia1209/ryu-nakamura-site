@@ -2,6 +2,14 @@ import { type WorkItem } from '../models/work'
 
 export const workData = [
         {
+          id: 4,
+          title: 'レッツ麻雀',
+          description: 'CPU対局に対応したiOS向け麻雀アプリです。ルール・持ち時間・見た目まで細部にわたってカスタマイズでき、初心者向けのアシスト機能も搭載しています。',
+          imageUrl: '/lets_majiang_icon.jpg',
+          techStack: ['Swift', 'SwiftUI'],
+          projectUrl: 'https://apps.apple.com/jp/app/%E3%83%AC%E3%83%83%E3%83%84%E9%BA%BB%E9%9B%80/id6801843977',
+        } as WorkItem,
+        {
           id: 1,
           title: 'Web麻雀',
           description: '個人開発したWebベースの麻雀ゲームです。基本的な麻雀操作（打牌、副露、アガリなど）を実装しています。',

@@ -3,6 +3,20 @@ import { data } from './contents.data'
 
 export const updateData: UpdateItem[] = [
   new UpdateItem(
+    '2026-09-26',
+    'notice',
+    'note記事「#19 ストア哲学とマルクスアウレリウス Part2」を公開しました',
+    'ストア哲学の基本概念と、マルクス・アウレリウスの『自省録』に見る思想を解説しています。',
+    'https://note.com/kenjinishizaki/n/n7bdae13af802',
+  ),
+  new UpdateItem(
+    '2026-08-23',
+    'app',
+    '麻雀アプリ「レッツ麻雀」をリリースしました',
+    'CPU対局に対応したiOS向け麻雀アプリをApp Storeで公開しました。ルールや見た目を細部までカスタマイズできます。',
+    'https://apps.apple.com/jp/app/%E3%83%AC%E3%83%83%E3%83%84%E9%BA%BB%E9%9B%80/id6801843977',
+  ),
+  new UpdateItem(
     '2026-08-16',
     'notice',
     '屋号を「RyuTech」に変更しました',

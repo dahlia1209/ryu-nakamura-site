@@ -51,7 +51,7 @@ function formatDate(dateStr: string): string {
 
     <section class="section">
       <HomeHeadline :headline="new Headline('apps', 'アプリ')" />
-      <p class="section-lede">無料で使えるWebアプリです。</p>
+      <p class="section-lede">無料で使えるアプリです。</p>
       <div class="apps-grid">
         <WorkItem v-for="item in recentApps" :key="item.id" :project="item" />
       </div>

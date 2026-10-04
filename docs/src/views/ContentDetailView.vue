@@ -4,6 +4,7 @@ import { useContentStore } from '../stores/content';
 import { useAuthStore } from '../stores/auth';
 import { useUserStore } from '../stores/user';
 import { useOrderStore } from '../stores/order';
+import { useContentService } from '../services/contentService';
 import { Content, PreviewContent } from '../models/content';
 import { OrderItem } from '../models/order';
 import { useRouter, useRoute } from 'vitepress'
@@ -19,6 +20,7 @@ const contentStore = useContentStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const orderStore = useOrderStore();
+const contentService = useContentService();
 const target = useTemplateRef('target-to-scroll')
 
 const localStore = (() => {
@@ -36,6 +38,15 @@ const localStore = (() => {
 
   const content = computed<PreviewContent | undefined>(() => {
     return data.contents.filter(x => x.title_no == contentTitleNo.value)[0];
+  });
+
+  // 管理者がアプリ内限定で無料公開指定した記事、または常に最新記事は、購入不要で読める
+  // (アプリ側のis_app_free判定ロジックと同じ基準)
+  const isReadableForFree = computed(() => {
+    if (!content.value) return false;
+    if (content.value.is_app_free) return true;
+    const maxTitleNo = Math.max(...data.contents.map(c => c.title_no));
+    return content.value.title_no === maxTitleNo;
   });
 
   // Format price
@@ -61,6 +72,22 @@ const localStore = (() => {
   });
 
   /*action*/
+
+  async function fetchFreeContentIfEligible() {
+    if (!isReadableForFree.value || !content.value) return;
+    try {
+      isLoading.value = true;
+      const full = await contentService.getAppFreeContent(content.value.title_no);
+      content.value.preview_html = full.contentHtml;
+      content.value.preview_speech_url = full.fullSpeechUrl;
+      isSubscribed.value = true;
+    } catch (err) {
+      console.error('Error fetching app-free content:', err);
+      error.value = err instanceof Error ? err.message : '記事の取得中にエラーが発生しました。';
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   async function fetchOrders() {
     try {
@@ -158,10 +185,12 @@ const localStore = (() => {
       content,
       formattedPrice,
       contentId: contentTitleNo,
-      formattedDate
+      formattedDate,
+      isReadableForFree
     },
     actions: {
       purchaseOrder,
+      fetchFreeContentIfEligible,
       scrollToTarget,
       fetchOrders,
       shareToX,
@@ -171,12 +200,18 @@ const localStore = (() => {
 })()
 
 onMounted(async () => {
-  if (userStore.user) await localStore.actions.fetchOrders()
+  if (localStore.getters.isReadableForFree.value) {
+    await localStore.actions.fetchFreeContentIfEligible()
+  } else if (userStore.user) {
+    await localStore.actions.fetchOrders()
+  }
   localStore.state.isLoading.value = false
 })
 
 watch(() => userStore.user, async (newX) => {
-  if (userStore.user) await localStore.actions.fetchOrders()
+  if (!localStore.getters.isReadableForFree.value && userStore.user) {
+    await localStore.actions.fetchOrders()
+  }
 })
 
 
@@ -200,7 +235,8 @@ watch(() => userStore.user, async (newX) => {
       <h1>{{ localStore.getters.content.value!.title }}</h1>
       <div class="content-meta">
         <div class="publish-date">公開日: {{ localStore.getters.formattedDate.value }}</div>
-        <div v-if="[
+        <span v-if="localStore.getters.isReadableForFree.value" class="free-badge">無料</span>
+        <div v-else-if="[
           !localStore.state.isLoading.value,
           !localStore.state.isSubscribed.value
         ].every(x => x == true)" class="price-display" @click="localStore.actions.scrollToTarget()">
@@ -597,6 +633,12 @@ input {
   transition: all 0.3s;
   color: green;
   ;
+  font-weight: 600;
+}
+
+.free-badge {
+  padding: 4px 15px;
+  color: #2563eb;
   font-weight: 600;
 }
 

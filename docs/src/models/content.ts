@@ -16,6 +16,7 @@ export class Content {
     public previewMoovieUrl?: string,
     public fullSpeechUrl?: string,
     public metaDescription?: string,
+    public isAppFree: boolean = false,
   ) {
   }
 
@@ -37,6 +38,7 @@ export class Content {
       response.preview_moovie_url,
       response.full_speech_url,
       response.meta_description,
+      response.is_app_free,
     )
   }
 }
@@ -58,6 +60,7 @@ export interface IContentResponse {
     preview_moovie_url?: string
     full_speech_url?: string
     meta_description?: string
+    is_app_free: boolean
 }
 
 
@@ -110,6 +113,7 @@ export class PreviewContent {
     public preview_moovie_url?: string,
     public full_speech_url?: string,
     public meta_description?: string,
+    public is_app_free: boolean = false,
   ) {
   }
 
@@ -131,6 +135,7 @@ export class PreviewContent {
       this.preview_moovie_url,
       this.full_speech_url,
       this.meta_description,
+      this.is_app_free,
     )
   }
 }

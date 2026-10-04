@@ -9,7 +9,7 @@ export default defineConfig({
   title: 'Ryu Nakamura',
   description: HOME_OG_DESCRIPTION,
   head: [
-    ['link', { rel: 'icon', href: '/home.svg' }],
+    ['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'twitter:card', content: 'summary' }],
     ['meta', { property: 'twitter:site', content: '@RyuNakamura' }],

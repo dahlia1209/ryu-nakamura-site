@@ -11,7 +11,7 @@ const contentStore = useContentStore();
   <div class="apps-container">
     <HomeHeadline :headline="new Headline('apps', 'アプリ一覧')" />
     <div class="intro-text">
-      <p>これまでに個人で開発してきた、無料で使えるWebアプリを紹介します。</p>
+      <p>これまでに個人で開発してきた、無料で使えるアプリを紹介します。</p>
     </div>
     <div class="works-grid">
       <WorkItem v-for="item in contentStore.workItems" :key="item.id" :project="item" />
